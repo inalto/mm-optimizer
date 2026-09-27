@@ -20,6 +20,19 @@ MM Optimizer answers both with a detection engine that genuinely tries to
 encode, and a recommendation engine that turns the outcome into a justified
 configuration.
 
+## Documentation
+
+Technical reference lives in [`docs/`](docs/); installation and day-to-day use
+live in the [wiki](https://github.com/inalto/mm-optimizer/wiki).
+
+- [Detection](docs/detection.md) — the five-stage capability engine
+- [Optimization levels](docs/optimization-levels.md) — the presets and the measurements behind them
+- [Delivery](docs/delivery.md) — responsive `<picture>`, and the AVIF MIME-type trap
+- [Conflicts](docs/conflicts.md) — standing down for competing plugins
+- [Hooks and API](docs/hooks.md) — filters and public functions
+- [Database](docs/database.md) — schema and the claim protocol
+- [Troubleshooting](docs/troubleshooting.md) — reading the diagnostics screen
+
 ## Architecture
 
 ```
