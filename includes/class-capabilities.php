@@ -1,10 +1,10 @@
 <?php
 /**
- * Motore di rilevamento delle librerie grafiche.
+ * Graphics library detection engine.
  *
- * Distingue sempre fra supporto "dichiarato" e supporto "verificato": e'
- * esattamente la differenza fra un host che funziona e uno che produce file
- * corrotti in silenzio.
+ * It always distinguishes "claimed" support from "verified" support: that is
+ * exactly the difference between a host that works and one that silently
+ * produces corrupted files.
  *
  * @package MM_Optimizer
  */
@@ -19,14 +19,14 @@ class Capabilities {
 	const SCHEMA = 1;
 
 	/**
-	 * Cache di richiesta.
+	 * Per-request cache.
 	 *
 	 * @var array|null
 	 */
 	protected static $cache = null;
 
 	/**
-	 * Binari cercati, con l'argomento che ne stampa la versione.
+	 * Binaries we look for, with the argument that prints their version.
 	 *
 	 * @return array
 	 */
@@ -43,7 +43,7 @@ class Capabilities {
 	}
 
 	/**
-	 * Cartelle in cui cercare i binari. Mai il PATH risolto da una shell.
+	 * Directories to search for binaries. Never a shell-resolved PATH.
 	 *
 	 * @return array
 	 */
@@ -51,17 +51,17 @@ class Capabilities {
 		$paths = array( '/usr/bin', '/usr/local/bin', '/bin', '/opt/local/bin', '/opt/homebrew/bin', '/usr/gnu/bin', '/usr/syno/bin' );
 
 		/**
-		 * Filtra le cartelle in cui cercare i binari di ottimizzazione.
+		 * Filters the directories searched for optimization binaries.
 		 *
-		 * @param array $paths Percorsi assoluti.
+		 * @param array $paths Absolute paths.
 		 */
 		return (array) apply_filters( 'mm_optimizer_binary_paths', $paths );
 	}
 
 	/**
-	 * Host gestiti su cui exec() e' inutile da provare.
+	 * Managed hosts where trying exec() is pointless.
 	 *
-	 * @return string Etichetta dell'host, oppure stringa vuota.
+	 * @return string Host label, or an empty string.
 	 */
 	public static function managed_host() {
 		$map = array(
@@ -78,11 +78,11 @@ class Capabilities {
 			}
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- confronto con costanti note, nessun output.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- compared against known constants, never output.
 		if ( ! empty( $_ENV['PANTHEON_ENVIRONMENT'] ) ) {
 			return 'Pantheon';
 		}
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- idem.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- same as above.
 		if ( ! empty( $_ENV['WPAAS_V2_SITE_ID'] ) ) {
 			return 'GoDaddy Managed';
 		}
@@ -91,10 +91,10 @@ class Capabilities {
 	}
 
 	/**
-	 * Impronta dell'ambiente: cambia quando cambia qualcosa che conta.
+	 * Environment fingerprint: changes when something that matters changes.
 	 *
-	 * Invalidare per impronta invece che per scadenza evita di indovinare un
-	 * TTL e coglie un aggiornamento di PHP nell'istante in cui avviene.
+	 * Invalidating by fingerprint rather than by expiry avoids guessing a TTL
+	 * and catches a PHP upgrade the moment it happens.
 	 *
 	 * @return string
 	 */
@@ -116,7 +116,7 @@ class Capabilities {
 	}
 
 	/**
-	 * Stringa di versione di Imagick, protetta da eccezioni.
+	 * Imagick version string, guarded against exceptions.
 	 *
 	 * @return string
 	 */
@@ -130,10 +130,10 @@ class Capabilities {
 	}
 
 	/**
-	 * Struttura vuota completa.
+	 * Complete empty structure.
 	 *
-	 * Garantisce che ogni consumatore trovi tutte le chiavi anche se il
-	 * rilevamento non e' mai stato eseguito o e' stato interrotto.
+	 * Guarantees that every consumer finds all the keys even when detection has
+	 * never run or was interrupted.
 	 *
 	 * @return array
 	 */
@@ -178,9 +178,9 @@ class Capabilities {
 	}
 
 	/**
-	 * Completa una struttura eventualmente parziale.
+	 * Fills in a possibly partial structure.
 	 *
-	 * @param array $caps Capacita'.
+	 * @param array $caps Capabilities.
 	 * @return array
 	 */
 	protected static function normalize( array $caps ) {
@@ -198,9 +198,9 @@ class Capabilities {
 	}
 
 	/**
-	 * Restituisce le capacita', rilevandole se necessario.
+	 * Returns the capabilities, detecting them when necessary.
 	 *
-	 * @param bool $force Forza un nuovo rilevamento.
+	 * @param bool $force Force a fresh detection run.
 	 * @return array
 	 */
 	public static function get( $force = false ) {
@@ -227,10 +227,10 @@ class Capabilities {
 	}
 
 	/**
-	 * I binari possono comparire senza che l'impronta cambi: si riesaminano
-	 * comunque una volta a settimana.
+	 * Binaries can appear without the fingerprint changing, so they are
+	 * re-examined once a week regardless.
 	 *
-	 * @param array $stored Capacita' memorizzate.
+	 * @param array $stored Stored capabilities.
 	 * @return bool
 	 */
 	protected static function binaries_stale( array $stored ) {
@@ -240,12 +240,12 @@ class Capabilities {
 	}
 
 	/**
-	 * Esegue il rilevamento completo e lo memorizza.
+	 * Runs the full detection and stores it.
 	 *
 	 * @return array
 	 */
 	public static function detect() {
-		// Un solo processo alla volta: il rilevamento lancia proc_open.
+		// One process at a time: detection spawns proc_open.
 		if ( get_transient( 'mm_opt_cap_lock' ) ) {
 			$stored = get_option( self::KEY, array() );
 			if ( is_array( $stored ) && ! empty( $stored ) ) {
@@ -282,7 +282,7 @@ class Capabilities {
 
 		$caps['duration_ms'] = (int) round( ( microtime( true ) - $start ) * 1000 );
 
-		// autoload = no: si legge solo in amministrazione e nel worker.
+		// autoload = no: only read in the admin and in the worker.
 		if ( false === get_option( self::KEY, false ) ) {
 			add_option( self::KEY, $caps, '', false );
 		} else {
@@ -297,7 +297,7 @@ class Capabilities {
 	}
 
 	/**
-	 * Fase 0: ambiente.
+	 * Stage 0: environment.
 	 *
 	 * @return array
 	 */
@@ -325,7 +325,7 @@ class Capabilities {
 	}
 
 	/**
-	 * Fase 1 e 2: estensioni PHP, supporto dichiarato e prova funzionale.
+	 * Stages 1 and 2: PHP extensions, claimed support and functional test.
 	 *
 	 * @return array
 	 */
@@ -397,11 +397,11 @@ class Capabilities {
 	}
 
 	/**
-	 * Codifica il campione con GD.
+	 * Encodes the sample with GD.
 	 *
-	 * @param string $source Percorso sorgente.
-	 * @param string $dest   Percorso destinazione.
-	 * @param string $mime   Tipo MIME di uscita.
+	 * @param string $source Source path.
+	 * @param string $dest   Destination path.
+	 * @param string $mime   Output MIME type.
 	 * @return bool
 	 */
 	protected static function gd_encode( $source, $dest, $mime ) {
@@ -506,11 +506,11 @@ class Capabilities {
 	}
 
 	/**
-	 * Codifica il campione con Imagick.
+	 * Encodes the sample with Imagick.
 	 *
-	 * @param string $source Percorso sorgente.
-	 * @param string $dest   Percorso destinazione.
-	 * @param string $tag    Formato Imagick.
+	 * @param string $source Source path.
+	 * @param string $dest   Destination path.
+	 * @param string $tag    Imagick format.
 	 * @return bool
 	 */
 	protected static function imagick_encode( $source, $dest, $tag ) {
@@ -566,9 +566,9 @@ class Capabilities {
 	}
 
 	/**
-	 * Fase 3: ricerca e prova dei binari.
+	 * Stage 3: binary discovery and testing.
 	 *
-	 * @param array $env Ambiente gia' rilevato.
+	 * @param array $env Already-detected environment.
 	 * @return array
 	 */
 	protected static function probe_binaries( array $env ) {
@@ -623,10 +623,10 @@ class Capabilities {
 	}
 
 	/**
-	 * Cerca un binario nelle cartelle note.
+	 * Looks for a binary in the known directories.
 	 *
-	 * @param string $name Nome del binario.
-	 * @return string Percorso assoluto, oppure stringa vuota.
+	 * @param string $name Binary name.
+	 * @return string Absolute path, or an empty string.
 	 */
 	protected static function find_binary( $name ) {
 		$constant = 'MM_OPTIMIZER_' . strtoupper( $name );
@@ -646,10 +646,10 @@ class Capabilities {
 	}
 
 	/**
-	 * Prima riga dell'output di versione di un binario.
+	 * First line of a binary's version output.
 	 *
-	 * @param string $path Percorso.
-	 * @param string $flag Argomento.
+	 * @param string $path Path.
+	 * @param string $flag Argument.
 	 * @return string
 	 */
 	protected static function binary_version( $path, $flag ) {
@@ -665,10 +665,10 @@ class Capabilities {
 	}
 
 	/**
-	 * Prova funzionale di un binario.
+	 * Functional test of a binary.
 	 *
-	 * @param string $name Nome del binario.
-	 * @param string $path Percorso.
+	 * @param string $name Binary name.
+	 * @param string $path Path.
 	 * @return array
 	 */
 	protected static function probe_binary( $name, $path ) {
@@ -693,8 +693,8 @@ class Capabilities {
 
 			case 'jpegoptim':
 			case 'jpegtran':
-				// Il campione ha 6 KB di metadati inutili: un binario che non
-				// fa nulla non scende sotto la soglia.
+				// The sample carries 6 KB of junk metadata: a binary that does
+				// nothing cannot get under the threshold.
 				return self::probe_lossless_jpeg( $name, $path );
 
 			case 'optipng':
@@ -709,10 +709,10 @@ class Capabilities {
 	}
 
 	/**
-	 * Prova un ottimizzatore JPEG senza perdita.
+	 * Tests a lossless JPEG optimizer.
 	 *
-	 * @param string $name Nome del binario.
-	 * @param string $path Percorso.
+	 * @param string $name Binary name.
+	 * @param string $path Path.
 	 * @return array
 	 */
 	protected static function probe_lossless_jpeg( $name, $path ) {
@@ -741,7 +741,7 @@ class Capabilities {
 		@unlink( $dest );
 		@unlink( $dest . '.out' );
 
-		// La sorgente e' 8.465 B di cui ~6 KB di commento superfluo.
+		// The source is 8,465 B, roughly 6 KB of it a junk comment.
 		$verified = $bytes > 0 && $bytes < 6000;
 
 		return array(
@@ -753,10 +753,10 @@ class Capabilities {
 	}
 
 	/**
-	 * Prova un ottimizzatore PNG senza perdita.
+	 * Tests a lossless PNG optimizer.
 	 *
-	 * @param string $name Nome del binario.
-	 * @param string $path Percorso.
+	 * @param string $name Binary name.
+	 * @param string $path Path.
 	 * @return array
 	 */
 	protected static function probe_lossless_png( $name, $path ) {
@@ -790,11 +790,11 @@ class Capabilities {
 	}
 
 	/**
-	 * Esegue un comando senza passare da una shell.
+	 * Runs a command without going through a shell.
 	 *
-	 * @param array $argv    Comando e argomenti.
-	 * @param int   $timeout Secondi.
-	 * @return string Output combinato.
+	 * @param array $argv    Command and arguments.
+	 * @param int   $timeout Seconds.
+	 * @return string Combined output.
 	 */
 	public static function run_command( array $argv, $timeout = 10 ) {
 		if ( ! Base::function_exists( 'proc_open' ) ) {
@@ -850,16 +850,16 @@ class Capabilities {
 	}
 
 	/**
-	 * Classifica: misura ogni codificatore verificato su una fotografia.
+	 * Ranking: measures every verified encoder against a photograph.
 	 *
-	 * Separata dalla verifica perche' le due domande sono diverse. "Funziona?"
-	 * si risponde su un campione minuscolo in pochi millisecondi. "Chi comprime
-	 * meglio?" richiede un'immagine fotografica: sul campione 64x64 cwebp -m 6
-	 * risulta piu' grande di -m 4, su una fotografia reale e' il 5-7% piu'
-	 * piccolo. Classificare sul campione sbagliato sceglie il motore sbagliato.
+	 * Kept separate from verification because the two questions differ. "Does it
+	 * work?" is answered on a tiny sample in milliseconds. "Which compresses
+	 * best?" needs a photographic image: on the 64x64 sample cwebp -m 6 comes out
+	 * larger than -m 4, while on a real photograph it is 5-7% smaller. Ranking on
+	 * the wrong sample picks the wrong engine.
 	 *
-	 * @param array $caps Capacita' parziali.
-	 * @return array Formato => motore => array( bytes, ms ).
+	 * @param array $caps Partial capabilities.
+	 * @return array Format => engine => array( bytes, ms ).
 	 */
 	protected static function run_bench( array $caps ) {
 		$out      = array();
@@ -912,11 +912,11 @@ class Capabilities {
 	}
 
 	/**
-	 * Codifica il campione fotografico con GD, alle impostazioni di produzione.
+	 * Encodes the photographic sample with GD, at production settings.
 	 *
-	 * @param string $source Percorso sorgente.
-	 * @param string $dest   Percorso destinazione.
-	 * @param string $mime   Tipo MIME di uscita.
+	 * @param string $source Source path.
+	 * @param string $dest   Destination path.
+	 * @param string $mime   Output MIME type.
 	 * @return bool
 	 */
 	protected static function gd_bench_encode( $source, $dest, $mime ) {
@@ -936,13 +936,13 @@ class Capabilities {
 	}
 
 	/**
-	 * Fase 5: sceglie il motore vincente per ogni formato di uscita.
+	 * Stage 4: picks the winning engine for each output format.
 	 *
-	 * La classifica e' sui byte misurati sulla stessa fotografia, con i
-	 * millisecondi come spareggio. Nessuna tabella di preferenze scritta a mano:
-	 * su un host dove cwebp batte GD, cwebp vince da solo.
+	 * Ranking is on the bytes measured against the same photograph, with
+	 * milliseconds as the tie-breaker. No hand-written preference table: on a host
+	 * where cwebp beats GD, cwebp wins on its own.
 	 *
-	 * @param array $caps Capacita' parziali.
+	 * @param array $caps Partial capabilities.
 	 * @return array
 	 */
 	protected static function resolve_encoders( array $caps ) {
@@ -957,8 +957,8 @@ class Capabilities {
 				}
 			}
 
-			// Ripiego sui numeri di verifica se la classifica non e' stata
-			// eseguibile (deadline, campione mancante).
+			// Fall back to the verification numbers when ranking could not
+			// run (deadline reached, sample missing).
 			if ( empty( $candidates ) ) {
 				foreach ( array( 'gd', 'imagick', 'gmagick' ) as $library ) {
 					$entry = $caps['libraries'][ $library ]['formats'][ $mime ] ?? null;
@@ -1014,16 +1014,16 @@ class Capabilities {
 	}
 
 	/**
-	 * Quali formati possono essere ottimizzati in place senza perdita.
+	 * Which formats can be optimized losslessly in place.
 	 *
-	 * @param array $caps Capacita' parziali.
+	 * @param array $caps Partial capabilities.
 	 * @return array
 	 */
 	protected static function resolve_lossless( array $caps ) {
 		$out = array();
 
-		// JPEG: nessuna libreria PHP sa ricomprimere senza perdita. Serve un
-		// binario dedicato.
+		// JPEG: no PHP library can recompress losslessly. A dedicated binary
+		// is required.
 		if ( ! empty( $caps['binaries']['jpegoptim']['verified'] ) ) {
 			$out['image/jpeg'] = array( 'available' => true, 'engine' => 'jpegoptim', 'reason' => '' );
 		} elseif ( ! empty( $caps['binaries']['jpegtran']['verified'] ) ) {
@@ -1032,8 +1032,8 @@ class Capabilities {
 			$out['image/jpeg'] = array( 'available' => false, 'engine' => '', 'reason' => 'no_jpeg_tool' );
 		}
 
-		// PNG: optipng se c'e', altrimenti GD sa ricomprimere a livello 9
-		// mantenendo i pixel identici.
+		// PNG: optipng when present, otherwise GD can recompress at level 9
+		// while keeping the pixels identical.
 		if ( ! empty( $caps['binaries']['optipng']['verified'] ) ) {
 			$out['image/png'] = array( 'available' => true, 'engine' => 'optipng', 'reason' => '' );
 		} elseif ( ! empty( $caps['libraries']['gd']['formats']['image/png']['verified'] ) ) {
@@ -1050,9 +1050,9 @@ class Capabilities {
 	}
 
 	/**
-	 * Fase 5: condizioni di consegna.
+	 * Stage 5: delivery conditions.
 	 *
-	 * @param array $caps Capacita' parziali.
+	 * @param array $caps Partial capabilities.
 	 * @return array
 	 */
 	protected static function probe_delivery( array $caps ) {
@@ -1078,14 +1078,14 @@ class Capabilities {
 	}
 
 	/**
-	 * Verifica empiricamente il Content-Type con cui il server consegna un
-	 * file .avif.
+	 * Empirically checks the Content-Type the server uses to deliver an .avif
+	 * file.
 	 *
-	 * Molti host hanno un /etc/mime.types anteriore ad AVIF: il file viene
-	 * servito come application/octet-stream e in modalita' <picture> Firefox
-	 * e Safari falliscono senza ripiegare sull'<img>.
+	 * Many hosts have an /etc/mime.types that predates AVIF: the file is served as
+	 * application/octet-stream, and in <picture> mode Firefox and Safari fail
+	 * without falling back to the <img>.
 	 *
-	 * @return bool|null Null se la sonda non e' stata eseguibile.
+	 * @return bool|null Null when the probe could not run.
 	 */
 	protected static function probe_avif_mime() {
 		$url = MM_OPTIMIZER_URL . 'assets/probe/probe.avif';
@@ -1112,9 +1112,9 @@ class Capabilities {
 	}
 
 	/**
-	 * Avvertenze da mostrare in diagnostica.
+	 * Warnings to surface in the diagnostics screen.
 	 *
-	 * @param array $caps Capacita' complete.
+	 * @param array $caps Complete capabilities.
 	 * @return array
 	 */
 	protected static function collect_warnings( array $caps ) {
@@ -1142,8 +1142,8 @@ class Capabilities {
 			$warnings[] = 'uploads_unwritable';
 		}
 
-		// Un formato dichiarato ma non verificato e' il caso che corrompe i
-		// file in silenzio: va segnalato in evidenza.
+		// A format that is claimed but not verified is the case that silently
+		// corrupts files: it has to be flagged prominently.
 		foreach ( $caps['libraries'] as $library => $data ) {
 			if ( empty( $data['present'] ) ) {
 				continue;
@@ -1163,7 +1163,7 @@ class Capabilities {
 	}
 
 	/**
-	 * Svuota la cache di richiesta.
+	 * Clears the per-request cache.
 	 *
 	 * @return void
 	 */

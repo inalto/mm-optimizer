@@ -1,6 +1,6 @@
 <?php
 /**
- * Gestione delle opzioni del plugin.
+ * Plugin settings.
  *
  * @package MM_Optimizer
  */
@@ -14,17 +14,17 @@ class Options {
 	const KEY = 'mm_optimizer_settings';
 
 	/**
-	 * Cache di richiesta.
+	 * Per-request cache.
 	 *
 	 * @var array|null
 	 */
 	protected static $cache = null;
 
 	/**
-	 * Valori predefiniti completi.
+	 * Complete default values.
 	 *
-	 * Le stringhe non sono tradotte: i default vengono letti prima del
-	 * caricamento delle traduzioni.
+	 * Strings here are deliberately untranslated: defaults are read before the
+	 * text domain is loaded.
 	 */
 	public static function defaults() {
 		return array(
@@ -85,7 +85,7 @@ class Options {
 	}
 
 	/**
-	 * Tutte le opzioni, unite ai default.
+	 * All settings, merged with the defaults.
 	 */
 	public static function all() {
 		if ( null !== self::$cache ) {
@@ -103,7 +103,7 @@ class Options {
 	}
 
 	/**
-	 * Unione ricorsiva a un solo livello di profondita'.
+	 * Recursive merge, one level deep.
 	 */
 	protected static function merge( $defaults, $stored ) {
 		$out = $defaults;
@@ -123,10 +123,10 @@ class Options {
 	}
 
 	/**
-	 * Legge un'opzione con notazione puntata: "avif.quality".
+	 * Reads a setting using dot notation: "avif.quality".
 	 *
-	 * @param string $path    Percorso.
-	 * @param mixed  $default Valore di ripiego.
+	 * @param string $path    Path.
+	 * @param mixed  $default Fallback value.
 	 * @return mixed
 	 */
 	public static function get( $path, $default = null ) {
@@ -145,7 +145,7 @@ class Options {
 	}
 
 	/**
-	 * Salva le opzioni (gia' sanificate).
+	 * Saves the settings (already sanitized).
 	 */
 	public static function update( array $options ) {
 		self::$cache = null;
@@ -153,12 +153,12 @@ class Options {
 	}
 
 	/**
-	 * Applica un insieme parziale di valori, passando dalla sanificazione.
+	 * Applies a partial set of values, going through sanitization.
 	 *
-	 * Usato da Recommender: le proposte non possono aggirare la validazione.
+	 * Used by Recommender: a proposal cannot bypass validation.
 	 *
-	 * @param array $partial Valori da sovrascrivere.
-	 * @return array Opzioni risultanti.
+	 * @param array $partial Values to override.
+	 * @return array Resulting settings.
 	 */
 	public static function apply_partial( array $partial ) {
 		$merged = self::merge( self::all(), $partial );
@@ -170,14 +170,14 @@ class Options {
 	}
 
 	/**
-	 * Svuota la cache di richiesta.
+	 * Clears the per-request cache.
 	 */
 	public static function flush() {
 		self::$cache = null;
 	}
 
 	/**
-	 * Registrazione impostazioni.
+	 * Setting registration.
 	 */
 	public static function register() {
 		register_setting(
@@ -193,9 +193,9 @@ class Options {
 	}
 
 	/**
-	 * Sanificazione completa: whitelist rigorosa, chiavi sconosciute scartate.
+	 * Full sanitization: strict whitelist, unknown keys discarded.
 	 *
-	 * @param mixed $input Dati in ingresso.
+	 * @param mixed $input Incoming data.
 	 * @return array
 	 */
 	public static function sanitize( $input ) {
@@ -262,7 +262,7 @@ class Options {
 				add_settings_error(
 					self::KEY,
 					'mm_opt_htaccess',
-					__( 'Modalita\' .htaccess non disponibile: un altro plugin ha gia\' scritto regole di riscrittura per le immagini. Impostata la modalita\' <picture>.', 'mm-optimizer' )
+					__( '.htaccess mode is not available: another plugin has already written image rewrite rules. Switched to &lt;picture&gt; mode.', 'mm-optimizer' )
 				);
 			}
 		}

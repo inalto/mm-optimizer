@@ -1,10 +1,10 @@
 <?php
 /**
- * Ottimizzazione senza perdita delle miniature generate da WordPress.
+ * Lossless optimization of WordPress-generated thumbnails.
  *
- * Interviene soltanto sulle miniature. Il file originale e la versione
- * ridimensionata da WordPress non vengono mai toccati: sono l'unica copia
- * ancora integra, e riscriverli renderebbe irreversibile qualunque errore.
+ * Only thumbnails. The original file and WordPress's scaled version are never
+ * touched: they are the only intact copy left, and rewriting them would make
+ * any mistake irreversible.
  *
  * @package MM_Optimizer
  */
@@ -16,16 +16,16 @@ defined( 'ABSPATH' ) || exit;
 class Thumbnails {
 
 	/**
-	 * Ottimizza un file, se le condizioni lo consentono.
+	 * Optimizes a file, when the conditions allow it.
 	 *
-	 * @param string $path          Percorso assoluto.
-	 * @param string $size_name     Nome della dimensione.
-	 * @param int    $attachment_id Allegato.
+	 * @param string $path          Absolute path.
+	 * @param string $size_name     Size name.
+	 * @param int    $attachment_id Attachment.
 	 * @return array {
-	 *     @type bool   $ok     Vero se il file e' stato ridotto.
-	 *     @type int    $before Byte iniziali.
-	 *     @type int    $after  Byte finali.
-	 *     @type string $reason Codice se non si e' intervenuti.
+	 *     @type bool   $ok     True when the file was made smaller.
+	 *     @type int    $before Bytes before.
+	 *     @type int    $after  Bytes after.
+	 *     @type string $reason Code when nothing was done.
 	 * }
 	 */
 	public static function optimize( $path, $size_name = '', $attachment_id = 0 ) {
@@ -59,8 +59,8 @@ class Thumbnails {
 
 		$before = (int) filesize( $path );
 
-		// Si lavora su una copia: il file in uso viene sostituito solo se il
-		// risultato e' valido e piu' piccolo.
+		// Work on a copy: the live file is replaced only once the result is
+		// valid and smaller.
 		$temp = trailingslashit( Base::tmp_dir() ) . 'opt-' . wp_generate_password( 10, false ) . '.' . pathinfo( $path, PATHINFO_EXTENSION );
 
 		if ( ! @copy( $path, $temp ) ) {
@@ -76,9 +76,9 @@ class Thumbnails {
 
 		$after = (int) filesize( $temp );
 
-		// Il formato deve essere rimasto lo stesso, e il file deve essere
-		// rileggibile: un ottimizzatore che sbaglia non deve poter sostituire
-		// una miniatura valida con un file rotto.
+		// The format has to be unchanged and the file has to be readable: an
+		// optimizer that gets it wrong must not be able to replace a valid
+		// thumbnail with a broken file.
 		if ( Base::sniff_mime( $temp ) !== $mime || ! @getimagesize( $temp ) ) {
 			@unlink( $temp );
 			return self::result( false, $before, $before, 'invalid_output' );
@@ -100,15 +100,14 @@ class Thumbnails {
 	}
 
 	/**
-	 * Vero solo per un file generato da WordPress.
+	 * True only for a file WordPress generated.
 	 *
-	 * Il confronto e' con i metadati dell'allegato, non con il nome del file:
-	 * un originale chiamato "foto-800x600.jpg" non deve essere scambiato per
-	 * una miniatura.
+	 * The check is against the attachment metadata, not the filename: an
+	 * original called "photo-800x600.jpg" must not be mistaken for a thumbnail.
 	 *
-	 * @param string $path          Percorso.
-	 * @param string $size_name     Nome della dimensione.
-	 * @param int    $attachment_id Allegato.
+	 * @param string $path          Path.
+	 * @param string $size_name     Size name.
+	 * @param int    $attachment_id Attachment.
 	 * @return bool
 	 */
 	public static function is_thumbnail( $path, $size_name = '', $attachment_id = 0 ) {
@@ -150,17 +149,17 @@ class Thumbnails {
 			return $known;
 		}
 
-		// Senza allegato non si puo' stabilire con certezza che sia una
-		// miniatura, quindi non si tocca nulla.
+		// Without an attachment there is no way to be sure this is a
+		// thumbnail, so nothing is touched.
 		return false;
 	}
 
 	/**
-	 * Esegue l'ottimizzatore scelto.
+	 * Runs the selected optimizer.
 	 *
-	 * @param string $engine Motore.
-	 * @param string $path   Percorso della copia di lavoro.
-	 * @param string $mime   Tipo MIME.
+	 * @param string $engine Engine.
+	 * @param string $path   Path of the working copy.
+	 * @param string $mime   MIME type.
 	 * @return bool
 	 */
 	protected static function run_engine( $engine, $path, $mime ) {
@@ -168,9 +167,9 @@ class Thumbnails {
 
 		switch ( $engine ) {
 			case 'gd':
-				// Solo PNG: GD ricomprime i pixel senza alterarli e scarta i
-				// metadati. Per il JPEG una ricodifica con GD sarebbe con
-				// perdita, quindi non e' prevista.
+				// PNG only: GD recompresses the pixels without altering them
+				// and drops the metadata. Re-encoding a JPEG with GD would be
+				// lossy, so it is not offered.
 				if ( 'image/png' !== $mime ) {
 					return false;
 				}
@@ -215,12 +214,12 @@ class Thumbnails {
 	}
 
 	/**
-	 * Costruisce un esito.
+	 * Builds a result.
 	 *
-	 * @param bool   $ok     Esito.
-	 * @param int    $before Byte iniziali.
-	 * @param int    $after  Byte finali.
-	 * @param string $reason Codice.
+	 * @param bool   $ok     Result.
+	 * @param int    $before Bytes before.
+	 * @param int    $after  Bytes after.
+	 * @param string $reason Code.
 	 * @return array
 	 */
 	protected static function result( $ok, $before, $after, $reason ) {

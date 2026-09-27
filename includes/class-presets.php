@@ -1,10 +1,10 @@
 <?php
 /**
- * Livelli di ottimizzazione.
+ * Optimization levels.
  *
- * I numeri derivano da misurazioni reali su un JPEG 2048x1367 da 721.366 byte:
- * WebP q82 = 400.174 B (-44,5%), WebP q75 = 293.764 B (-59,3%),
- * AVIF q60 = 261.654 B (-63,7%), AVIF q50 = 161.662 B (-77,6%).
+ * The numbers come from real measurements on a 2048x1367 JPEG of 721,366 bytes:
+ * WebP q82 = 400,174 B (-44.5%), WebP q75 = 293,764 B (-59.3%),
+ * AVIF q60 = 261,654 B (-63.7%), AVIF q50 = 161,662 B (-77.6%).
  *
  * @package MM_Optimizer
  */
@@ -16,16 +16,15 @@ defined( 'ABSPATH' ) || exit;
 class Presets {
 
 	/**
-	 * Definizione dei livelli.
+	 * Level definitions.
 	 *
-	 * Nota su cwebp_m: GD codifica sempre con il metodo libwebp 4 e non e'
-	 * configurabile. cwebp con -m 6 produce circa il 5-7% in meno sulle
-	 * fotografie al costo del doppio del tempo, per cui i livelli che puntano
-	 * alla qualita' lo usano e solo Aggressivo scende a 4 per smaltire in
-	 * fretta un arretrato.
+	 * A note on cwebp_m: GD always encodes with libwebp method 4 and offers no
+	 * way to change it. cwebp at -m 6 produces roughly 5-7% smaller files on
+	 * photographs at twice the time, so the quality-oriented levels use it and
+	 * only Aggressive drops to 4 to clear a backlog quickly.
 	 *
-	 * Le etichette non sono tradotte qui: vengono risolte da label() a
-	 * runtime, quando il textdomain e' caricato.
+	 * Labels are not translated here: label() resolves them at runtime, once
+	 * the text domain is loaded.
 	 *
 	 * @return array
 	 */
@@ -66,49 +65,49 @@ class Presets {
 	}
 
 	/**
-	 * Etichetta tradotta di un livello.
+	 * Translated label for a level.
 	 *
-	 * @param string $level Identificativo del livello.
+	 * @param string $level Level identifier.
 	 * @return string
 	 */
 	public static function label( $level ) {
 		switch ( $level ) {
 			case 'conservative':
-				return __( 'Conservativo', 'mm-optimizer' );
+				return __( 'Conservative', 'mm-optimizer' );
 			case 'balanced':
-				return __( 'Bilanciato', 'mm-optimizer' );
+				return __( 'Balanced', 'mm-optimizer' );
 			case 'aggressive':
-				return __( 'Aggressivo', 'mm-optimizer' );
+				return __( 'Aggressive', 'mm-optimizer' );
 			case 'custom':
-				return __( 'Personalizzato', 'mm-optimizer' );
+				return __( 'Custom', 'mm-optimizer' );
 		}
 
 		return $level;
 	}
 
 	/**
-	 * Descrizione tradotta di un livello.
+	 * Translated description for a level.
 	 *
-	 * @param string $level Identificativo del livello.
+	 * @param string $level Level identifier.
 	 * @return string
 	 */
 	public static function description( $level ) {
 		switch ( $level ) {
 			case 'conservative':
-				return __( 'Qualita\' massima, risparmio piu\' contenuto. Adatto a fotografia e portfolio dove la resa viene prima del peso.', 'mm-optimizer' );
+				return __( 'Highest quality, smaller savings. Suited to photography and portfolios where how the image looks matters more than what it weighs.', 'mm-optimizer' );
 			case 'balanced':
-				return __( 'Il compromesso consigliato: circa il 45% in meno con WebP e il 67% in meno con AVIF, senza differenze visibili sulle fotografie.', 'mm-optimizer' );
+				return __( 'The recommended compromise: around 45% smaller with WebP and 66% smaller with AVIF, with no visible difference on photographs.', 'mm-optimizer' );
 			case 'aggressive':
-				return __( 'Risparmio massimo: fino al 78% in meno con AVIF. Su texture fini e gradienti possono comparire lievi artefatti.', 'mm-optimizer' );
+				return __( 'Maximum savings: up to 78% smaller with AVIF. Fine texture and gradients may show slight artefacts.', 'mm-optimizer' );
 			case 'custom':
-				return __( 'Valori impostati a mano. Usa il banco di prova per verificarli sulle immagini di questo sito.', 'mm-optimizer' );
+				return __( 'Hand-set values. Use the test bench to check them against this site\'s own images.', 'mm-optimizer' );
 		}
 
 		return '';
 	}
 
 	/**
-	 * Valori effettivi del livello attivo, con i personalizzati applicati.
+	 * Effective values for the active level, with custom values applied.
 	 *
 	 * @return array
 	 */
@@ -125,10 +124,10 @@ class Presets {
 	}
 
 	/**
-	 * Qualita' da usare per una data coppia sorgente/destinazione.
+	 * Quality to use for a given source/target pair.
 	 *
-	 * @param string $source_mime Tipo MIME della sorgente.
-	 * @param string $target_mime Tipo MIME della destinazione.
+	 * @param string $source_mime Source MIME type.
+	 * @param string $target_mime Target MIME type.
 	 * @return int
 	 */
 	public static function quality( $source_mime, $target_mime ) {
@@ -142,17 +141,17 @@ class Presets {
 		}
 
 		/**
-		 * Filtra la qualita' di codifica scelta per una conversione.
+		 * Filters the encoding quality chosen for a conversion.
 		 *
-		 * @param int    $quality     Qualita' 1-100.
-		 * @param string $source_mime Tipo MIME della sorgente.
-		 * @param string $target_mime Tipo MIME della destinazione.
+		 * @param int    $quality     Quality, 1-100.
+		 * @param string $source_mime Source MIME type.
+		 * @param string $target_mime Target MIME type.
 		 */
 		return (int) apply_filters( 'mm_optimizer_quality', $quality, $source_mime, $target_mime );
 	}
 
 	/**
-	 * Risparmio minimo percentuale per conservare una derivata.
+	 * Minimum percentage saving required to keep a derivative.
 	 *
 	 * @return int
 	 */
@@ -162,7 +161,7 @@ class Presets {
 	}
 
 	/**
-	 * Dimensione sotto la quale una sorgente non viene nemmeno tentata.
+	 * Size below which a source is not even attempted.
 	 *
 	 * @return int
 	 */
@@ -172,7 +171,7 @@ class Presets {
 	}
 
 	/**
-	 * Parametro di velocita' per l'encoder AVIF.
+	 * Speed parameter for the AVIF encoder.
 	 *
 	 * @return int
 	 */
@@ -182,7 +181,7 @@ class Presets {
 	}
 
 	/**
-	 * Parametro -m per cwebp.
+	 * The -m parameter for cwebp.
 	 *
 	 * @return int
 	 */
@@ -192,13 +191,13 @@ class Presets {
 	}
 
 	/**
-	 * Risparmio stimato per la UI, in percentuale, sulla base delle misure.
+	 * Estimated saving for the UI, as a percentage, based on the measurements.
 	 *
-	 * Interpolazione lineare fra i punti misurati; oltre l'intervallo misurato
-	 * il valore e' dichiarato come stima nella UI.
+	 * Linear interpolation between the measured points; beyond the measured
+	 * range the UI labels the figure as an estimate.
 	 *
-	 * @param string $level  Livello.
-	 * @param string $format 'webp' oppure 'avif'.
+	 * @param string $level  Level.
+	 * @param string $format 'webp' or 'avif'.
 	 * @return int
 	 */
 	public static function estimated_saving( $level, $format ) {
@@ -210,7 +209,7 @@ class Presets {
 
 		$quality = 'avif' === $format ? $all[ $level ]['avif_jpeg'] : $all[ $level ]['webp_jpeg'];
 
-		// Punti misurati: qualita' => risparmio percentuale.
+		// Measured points: quality => percentage saved.
 		$measured = 'avif' === $format
 			? array( 50 => 77.6, 60 => 63.7 )
 			: array( 75 => 59.3, 82 => 44.5 );

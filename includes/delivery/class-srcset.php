@@ -1,10 +1,10 @@
 <?php
 /**
- * Registrazione del srcset calcolato dal nucleo.
+ * Records the srcset computed by core.
  *
- * Non modifica nulla: annota soltanto. Riscrivere questo filtro per puntare
- * alle derivate distruggerebbe il ripiego dell'<img>, che e' l'unica rete di
- * sicurezza quando una derivata manca.
+ * Changes nothing: it only takes note. Rewriting this filter to point at the
+ * derivatives would destroy the <img> fallback, which is the only safety net
+ * when a derivative is missing.
  *
  * @package MM_Optimizer
  */
@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
 class Srcset {
 
 	/**
-	 * Sorgenti annotate, per richiesta.
+	 * Recorded sources, per request.
 	 *
 	 * @var array
 	 */
 	protected static $recorded = array();
 
 	/**
-	 * Registra gli agganci.
+	 * Registers the hooks.
 	 *
 	 * @return void
 	 */
@@ -34,14 +34,14 @@ class Srcset {
 	}
 
 	/**
-	 * Annota le sorgenti risolte dal nucleo.
+	 * Records the sources core resolved.
 	 *
-	 * @param array  $sources       Sorgenti.
-	 * @param array  $size_array    Dimensioni.
-	 * @param string $image_src     URL principale.
-	 * @param array  $image_meta    Metadati.
-	 * @param int    $attachment_id Allegato.
-	 * @return array Sorgenti, non modificate.
+	 * @param array  $sources       Sources.
+	 * @param array  $size_array    Dimensions.
+	 * @param string $image_src     Main URL.
+	 * @param array  $image_meta    Metadata.
+	 * @param int    $attachment_id Attachment.
+	 * @return array Sources, unchanged.
 	 */
 	public static function record( $sources, $size_array, $image_src, $image_meta, $attachment_id = 0 ) {
 		if ( is_array( $sources ) && ! empty( $sources ) ) {
@@ -52,9 +52,9 @@ class Srcset {
 	}
 
 	/**
-	 * Recupera le sorgenti annotate per un URL.
+	 * Retrieves the recorded sources for a URL.
 	 *
-	 * @param string $image_src URL principale.
+	 * @param string $image_src Main URL.
 	 * @return array
 	 */
 	public static function get( $image_src ) {
@@ -64,7 +64,7 @@ class Srcset {
 	}
 
 	/**
-	 * Chiave di annotazione.
+	 * Record key.
 	 *
 	 * @param string $url URL.
 	 * @return string

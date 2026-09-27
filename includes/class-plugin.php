@@ -1,6 +1,6 @@
 <?php
 /**
- * Avvio del plugin.
+ * Plugin bootstrap.
  *
  * @package MM_Optimizer
  */
@@ -12,14 +12,14 @@ defined( 'ABSPATH' ) || exit;
 class Plugin {
 
 	/**
-	 * Istanza unica.
+	 * Single instance.
 	 *
 	 * @var Plugin|null
 	 */
 	protected static $instance = null;
 
 	/**
-	 * Restituisce l'istanza unica.
+	 * Returns the single instance.
 	 *
 	 * @return Plugin
 	 */
@@ -32,12 +32,12 @@ class Plugin {
 	}
 
 	/**
-	 * Costruttore privato: si passa da instance().
+	 * Private constructor: go through instance().
 	 */
 	protected function __construct() {}
 
 	/**
-	 * Registra tutti gli agganci.
+	 * Registers every hook.
 	 *
 	 * @return void
 	 */
@@ -45,13 +45,13 @@ class Plugin {
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ), 5 );
 		add_action( 'plugins_loaded', array( $this, 'maybe_upgrade' ), 20 );
 
-		// La conversione resta attiva anche in presenza di un concorrente:
-		// si ritira soltanto la consegna.
+		// Conversion stays on even when a competitor is active: only delivery
+		// stands down.
 		Attachment_Hooks::init();
 		Queue::init();
 
-		// La consegna decide da sola se accendersi, dopo che i plugin sono
-		// tutti caricati e il rilevamento dei conflitti e' attendibile.
+		// Delivery decides for itself whether to arm, once every plugin has
+		// loaded and conflict detection is trustworthy.
 		add_action( 'plugins_loaded', array( 'MM_Optimizer\\Delivery\\Delivery', 'init' ), 30 );
 
 		if ( is_admin() ) {
@@ -63,7 +63,7 @@ class Plugin {
 	}
 
 	/**
-	 * Al salvataggio delle impostazioni.
+	 * When the settings are saved.
 	 *
 	 * @return void
 	 */
@@ -74,7 +74,7 @@ class Plugin {
 	}
 
 	/**
-	 * Carica le traduzioni.
+	 * Loads the translations.
 	 *
 	 * @return void
 	 */
@@ -83,7 +83,7 @@ class Plugin {
 	}
 
 	/**
-	 * Allinea lo schema quando la versione cambia.
+	 * Brings the schema up to date when the version changes.
 	 *
 	 * @return void
 	 */
@@ -98,14 +98,14 @@ class Plugin {
 
 		update_option( 'mm_optimizer_version', MM_OPTIMIZER_VERSION, true );
 
-		// Le capacita' si ricalcolano da sole grazie all'impronta, che
-		// include la versione del plugin.
+		// Capabilities recompute themselves thanks to the fingerprint, which
+		// includes the plugin version.
 		Capabilities::flush();
 		Conflicts::flush();
 	}
 
 	/**
-	 * Attivazione.
+	 * Activation.
 	 *
 	 * @return void
 	 */
@@ -118,8 +118,8 @@ class Plugin {
 
 		update_option( 'mm_optimizer_version', MM_OPTIMIZER_VERSION, true );
 
-		// Il rilevamento e' costoso: si fa subito dopo, fuori dalla richiesta
-		// di attivazione, cosi' la prima schermata trova gia' i dati pronti.
+		// Detection is expensive: run it just afterwards, outside the
+		// activation request, so the first screen already has data.
 		if ( ! wp_next_scheduled( 'mm_optimizer_detect' ) ) {
 			wp_schedule_single_event( time() + 30, 'mm_optimizer_detect' );
 		}
@@ -130,7 +130,7 @@ class Plugin {
 	}
 
 	/**
-	 * Disattivazione: non rimuove nulla.
+	 * Deactivation: removes nothing.
 	 *
 	 * @return void
 	 */
@@ -141,12 +141,12 @@ class Plugin {
 		delete_transient( 'mm_opt_cap_lock' );
 		delete_transient( 'mm_opt_htaccess_scan' );
 
-		// Le regole nel .htaccess non devono sopravvivere alla disattivazione.
+		// Rewrite rules must not outlive deactivation.
 		Htaccess::remove();
 	}
 
 	/**
-	 * Crea o aggiorna le tabelle.
+	 * Creates or updates the tables.
 	 *
 	 * @return void
 	 */

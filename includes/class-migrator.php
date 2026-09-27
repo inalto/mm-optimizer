@@ -1,6 +1,6 @@
 <?php
 /**
- * Importazione da un plugin concorrente.
+ * Import from a competing plugin.
  *
  * @package MM_Optimizer
  */
@@ -12,21 +12,21 @@ defined( 'ABSPATH' ) || exit;
 class Migrator {
 
 	/**
-	 * Cartella di uscita di Converter for Media.
+	 * Output directory used by Converter for Media.
 	 *
 	 * @return string
 	 */
 	public static function webpc_dir() {
 		/**
-		 * Filtra la cartella di uscita di Converter for Media.
+		 * Filters the Converter for Media output directory.
 		 *
-		 * @param string $dir Percorso assoluto.
+		 * @param string $dir Absolute path.
 		 */
 		return apply_filters( 'mm_optimizer_webpc_dir', trailingslashit( WP_CONTENT_DIR ) . 'uploads-webpc' );
 	}
 
 	/**
-	 * Vero se c'e' qualcosa da importare.
+	 * Whether there is anything to import.
 	 *
 	 * @return bool
 	 */
@@ -35,13 +35,13 @@ class Migrator {
 	}
 
 	/**
-	 * Fotografa cosa ha prodotto il plugin precedente.
+	 * Takes stock of what the previous plugin produced.
 	 *
 	 * @return array {
-	 *     @type int    $webp     File WebP trovati.
-	 *     @type int    $avif     File AVIF trovati.
-	 *     @type int    $bytes    Spazio occupato.
-	 *     @type array  $settings Impostazioni leggibili.
+	 *     @type int    $webp     WebP files found.
+	 *     @type int    $avif     AVIF files found.
+	 *     @type int    $bytes    Space occupied.
+	 *     @type array  $settings Settings we could read.
 	 * }
 	 */
 	public static function inventory() {
@@ -95,9 +95,9 @@ class Migrator {
 	}
 
 	/**
-	 * Traduce le impostazioni del plugin precedente nelle nostre.
+	 * Translates the previous plugin's settings into ours.
 	 *
-	 * @return array Opzioni risultanti.
+	 * @return array Resulting options.
 	 */
 	public static function import_settings() {
 		$settings = get_option( 'webpc_settings', array() );
@@ -115,9 +115,9 @@ class Migrator {
 			$partial['avif'] = array( 'enabled' => in_array( 'avif', $formats, true ) ? 1 : 0 );
 		}
 
-		// La qualita' del plugin precedente viene ricondotta al livello piu'
-		// vicino, invece di essere copiata in "personalizzato": i livelli sono
-		// tarati su misure reali, un singolo numero ereditato no.
+		// The previous plugin's quality is mapped to the nearest level rather
+		// than copied into "custom": the levels are calibrated against real
+		// measurements, a single inherited number is not.
 		if ( ! empty( $settings['quality'] ) ) {
 			$quality = (int) $settings['quality'];
 
@@ -130,24 +130,24 @@ class Migrator {
 			}
 		}
 
-		Log::add( __( 'Impostazioni importate da Converter for Media.', 'mm-optimizer' ), 'info', $partial );
+		Log::add( __( 'Settings imported from Converter for Media.', 'mm-optimizer' ), 'info', $partial );
 
 		return Options::apply_partial( $partial );
 	}
 
 	/**
-	 * Adotta i file gia' prodotti, rinominandoli secondo il nostro schema.
+	 * Adopts the files already produced, renaming them to our scheme.
 	 *
-	 * Converter for Media salva in un albero parallelo con il percorso
-	 * ricalcato: uploads-webpc/uploads/2024/01/foto.jpg.webp. Lo schema del
-	 * nome coincide con il nostro, quindi basta spostarli.
+	 * Converter for Media writes into a parallel tree that mirrors the path:
+	 * uploads-webpc/uploads/2024/01/photo.jpg.webp. The naming scheme matches
+	 * ours, so the files only need moving.
 	 *
-	 * @param int  $limit Numero massimo di file per passata.
-	 * @param bool $copy  Copia invece di spostare.
+	 * @param int  $limit Maximum number of files per pass.
+	 * @param bool $copy  Copy instead of moving.
 	 * @return array {
-	 *     @type int  $adopted  File adottati.
-	 *     @type int  $skipped  File ignorati.
-	 *     @type bool $finished Vero quando non resta altro.
+	 *     @type int  $adopted  Files adopted.
+	 *     @type int  $skipped  Files ignored.
+	 *     @type bool $finished True when nothing is left.
 	 * }
 	 */
 	public static function adopt( $limit = 200, $copy = true ) {
@@ -189,7 +189,7 @@ class Migrator {
 			$relative = ltrim( str_replace( wp_normalize_path( $root ), '', wp_normalize_path( $file->getPathname() ) ), '/' );
 			$target   = $uploads . $relative;
 
-			// Il nome della sorgente si ottiene togliendo la nostra estensione.
+			// The source name is the target minus our extension.
 			$source = preg_replace( '/\.' . preg_quote( $extension, '/' ) . '$/i', '', $target );
 
 			if ( ! @is_file( $source ) ) {

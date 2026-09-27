@@ -1,9 +1,9 @@
 <?php
 /**
- * Produzione delle derivate.
+ * Derivative production.
  *
- * Garanzia fondamentale: il file sorgente non viene mai aperto in scrittura.
- * Questa classe legge la sorgente e scrive soltanto il file della derivata.
+ * Core guarantee: the source file is never opened for writing. This class
+ * reads the source and writes only the derivative.
  *
  * @package MM_Optimizer
  */
@@ -15,18 +15,18 @@ defined( 'ABSPATH' ) || exit;
 class Converter {
 
 	/**
-	 * Converte una sorgente in un formato.
+	 * Converts a source into one format.
 	 *
-	 * @param string $source        Percorso assoluto della sorgente.
-	 * @param string $format        'webp' oppure 'avif'.
-	 * @param int    $attachment_id Allegato di appartenenza.
-	 * @param string $size_name     Nome della dimensione.
-	 * @param bool   $force         Rigenera anche se gia' presente e aggiornata.
+	 * @param string $source        Absolute source path.
+	 * @param string $format        'webp' or 'avif'.
+	 * @param int    $attachment_id Owning attachment.
+	 * @param string $size_name     Size name.
+	 * @param bool   $force         Regenerate even when present and current.
 	 * @return array {
-	 *     @type int    $status Stato registrato.
-	 *     @type string $error  Codice di errore.
-	 *     @type int    $bytes  Byte della derivata.
-	 *     @type int    $saved  Byte risparmiati.
+	 *     @type int    $status Recorded status.
+	 *     @type string $error  Error code.
+	 *     @type int    $bytes  Derivative bytes.
+	 *     @type int    $saved  Bytes saved.
 	 * }
 	 */
 	public static function convert( $source, $format, $attachment_id = 0, $size_name = '', $force = false ) {
@@ -49,7 +49,7 @@ class Converter {
 			return self::record( $source, $format, $attachment_id, $size_name, Records::STATUS_SKIPPED, 'unsupported_source' );
 		}
 
-		// Le animazioni perderebbero i fotogrammi: si saltano interamente.
+		// Animations would lose their frames: skip them entirely.
 		if ( 'image/gif' === $source_mime && Base::is_animated_gif( $source ) ) {
 			return self::record( $source, $format, $attachment_id, $size_name, Records::STATUS_SKIPPED, 'animated' );
 		}
@@ -72,13 +72,13 @@ class Converter {
 
 		list( $width, $height ) = $size;
 
-		// WebP non supera i 16.383 pixel di lato: e' un limite del formato.
+		// WebP cannot exceed 16,383 pixels per side: that is a format limit.
 		if ( 'webp' === $format && ( $width > 16383 || $height > 16383 ) ) {
 			return self::record( $source, $format, $attachment_id, $size_name, Records::STATUS_SKIPPED, 'too_wide', 0, $source_bytes );
 		}
 
-		// Stima della memoria prima di aprire: meglio saltare che far morire
-		// la richiesta con un errore fatale.
+		// Estimate the memory before opening: better to skip than to kill the
+		// request with a fatal error.
 		if ( ! Encoder::memory_available( $width, $height ) ) {
 			return self::record( $source, $format, $attachment_id, $size_name, Records::STATUS_ERROR, 'too_large', 0, $source_bytes );
 		}
@@ -102,9 +102,9 @@ class Converter {
 
 		$out_bytes = (int) filesize( $dest );
 
-		// Una derivata piu' grande della sorgente non ha ragione di esistere.
-		// Capita spesso sulle icone e sui PNG gia' ottimizzati: e' un esito
-		// normale, non un errore, e non va ritentato a ogni passaggio.
+		// A derivative larger than its source has no reason to exist. This
+		// happens often with icons and already-optimized PNGs: it is a normal
+		// outcome, not an error, and must not be retried on every pass.
 		$threshold = (int) ( $source_bytes * ( 100 - Presets::min_saving() ) / 100 );
 
 		if ( $out_bytes >= $threshold ) {
@@ -117,12 +117,12 @@ class Converter {
 	}
 
 	/**
-	 * Vero se la derivata esiste ed e' allineata alla sorgente.
+	 * True when the derivative exists and matches the source.
 	 *
-	 * @param string $source Sorgente.
-	 * @param string $dest   Derivata.
-	 * @param string $format Formato.
-	 * @param string $hash   Impronta corrente della sorgente.
+	 * @param string $source Source.
+	 * @param string $dest   Derivative.
+	 * @param string $format Format.
+	 * @param string $hash   Current fingerprint of the source.
 	 * @return bool
 	 */
 	protected static function is_fresh( $source, $dest, $format, $hash ) {
@@ -140,20 +140,20 @@ class Converter {
 			return false;
 		}
 
-		// Un cambio di livello deve poter rigenerare quello che era stato
-		// prodotto con l'impostazione precedente.
+		// Changing the level has to be able to regenerate what was produced
+		// under the previous setting.
 		$expected = Presets::quality( Base::sniff_mime( $source ), Paths::formats()[ $format ] );
 
 		return (int) $row['quality'] === (int) $expected;
 	}
 
 	/**
-	 * Converte tutte le dimensioni di un allegato.
+	 * Converts every size of an attachment.
 	 *
-	 * @param int   $attachment_id Identificativo.
-	 * @param array $metadata      Metadati; se assenti vengono letti.
-	 * @param bool  $force         Rigenera comunque.
-	 * @return array Riepilogo.
+	 * @param int   $attachment_id Identifier.
+	 * @param array $metadata      Metadata; read when absent.
+	 * @param bool  $force         Regenerate regardless.
+	 * @return array Summary.
 	 */
 	public static function convert_attachment( $attachment_id, $metadata = null, $force = false ) {
 		$attachment_id = (int) $attachment_id;
@@ -162,8 +162,8 @@ class Converter {
 		$summary = array( 'done' => 0, 'skipped' => 0, 'error' => 0, 'saved' => 0 );
 
 		foreach ( self::plan( $attachment_id, $metadata ) as $item ) {
-			// Prima la riduzione senza perdita della miniatura: le derivate
-			// vanno prodotte dalla versione gia' ripulita.
+			// Lossless thumbnail reduction first: the derivatives should be
+			// produced from the already-cleaned version.
 			$lossless = Thumbnails::optimize( $item['path'], $item['size'], $attachment_id );
 
 			if ( $lossless['ok'] ) {
@@ -191,11 +191,11 @@ class Converter {
 	}
 
 	/**
-	 * Elenca i file da convertire per un allegato.
+	 * Lists the files to convert for an attachment.
 	 *
-	 * @param int   $attachment_id Identificativo.
-	 * @param array $metadata      Metadati.
-	 * @return array Elenco di array con 'path' e 'size'.
+	 * @param int   $attachment_id Identifier.
+	 * @param array $metadata      Metadata.
+	 * @return array List of arrays with 'path' and 'size'.
 	 */
 	public static function plan( $attachment_id, $metadata ) {
 		$file = get_attached_file( $attachment_id );
@@ -237,10 +237,10 @@ class Converter {
 	}
 
 	/**
-	 * Quali dimensioni convertire, secondo l'impostazione.
+	 * Which sizes to convert, according to the setting.
 	 *
-	 * @param array $metadata Metadati dell'allegato.
-	 * @return array|null Null significa "tutte".
+	 * @param array $metadata Attachment metadata.
+	 * @return array|null Null means "all of them".
 	 */
 	protected static function wanted_sizes( $metadata ) {
 		$mode = Options::get( 'sizes.mode', 'srcset' );
@@ -253,10 +253,10 @@ class Converter {
 			return (array) Options::get( 'sizes.include', array() );
 		}
 
-		// Modalita' srcset: solo le dimensioni che conservano le proporzioni
-		// dell'originale, perche' sono le uniche che WordPress ammette nel
-		// srcset. Le dimensioni ritagliate finiscono comunque dentro se il
-		// tema le usa direttamente come src, quindi si tengono quelle grandi.
+		// srcset mode: only the sizes that preserve the original's aspect
+		// ratio, since those are the only ones WordPress admits into a srcset.
+		// Cropped sizes still get in when the theme uses them directly as a
+		// src, so the large ones are kept.
 		if ( empty( $metadata['width'] ) || empty( $metadata['height'] ) ) {
 			return null;
 		}
@@ -280,7 +280,7 @@ class Converter {
 	}
 
 	/**
-	 * Formati abilitati e realmente producibili.
+	 * Formats that are enabled and genuinely producible.
 	 *
 	 * @return array
 	 */
@@ -297,11 +297,11 @@ class Converter {
 	}
 
 	/**
-	 * Rimuove derivate e righe di un allegato.
+	 * Removes an attachment's derivatives and rows.
 	 *
-	 * @param int   $attachment_id Identificativo.
-	 * @param array $metadata      Metadati.
-	 * @return int File rimossi.
+	 * @param int   $attachment_id Identifier.
+	 * @param array $metadata      Metadata.
+	 * @return int Files removed.
 	 */
 	public static function cleanup_attachment( $attachment_id, $metadata = null ) {
 		$metadata = is_array( $metadata ) ? $metadata : wp_get_attachment_metadata( $attachment_id );
@@ -317,19 +317,19 @@ class Converter {
 	}
 
 	/**
-	 * Registra l'esito e lo restituisce.
+	 * Records the outcome and returns it.
 	 *
-	 * @param string $source        Sorgente.
-	 * @param string $format        Formato.
-	 * @param int    $attachment_id Allegato.
-	 * @param string $size_name     Dimensione.
-	 * @param int    $status        Stato.
-	 * @param string $error         Codice di errore.
-	 * @param int    $out_bytes     Byte prodotti.
-	 * @param int    $source_bytes  Byte della sorgente.
-	 * @param string $engine        Motore.
-	 * @param int    $quality       Qualita'.
-	 * @param string $hash          Impronta.
+	 * @param string $source        Source.
+	 * @param string $format        Format.
+	 * @param int    $attachment_id Attachment.
+	 * @param string $size_name     Size.
+	 * @param int    $status        Status.
+	 * @param string $error         Error code.
+	 * @param int    $out_bytes     Bytes produced.
+	 * @param int    $source_bytes  Source bytes.
+	 * @param string $engine        Engine.
+	 * @param int    $quality       Quality.
+	 * @param string $hash          Fingerprint.
 	 * @return array
 	 */
 	protected static function record( $source, $format, $attachment_id, $size_name, $status, $error, $out_bytes = 0, $source_bytes = 0, $engine = '', $quality = 0, $hash = '' ) {
@@ -355,12 +355,12 @@ class Converter {
 	}
 
 	/**
-	 * Costruisce un esito.
+	 * Builds a result.
 	 *
-	 * @param int    $status Stato.
-	 * @param string $error  Codice.
-	 * @param int    $bytes  Byte prodotti.
-	 * @param int    $saved  Byte risparmiati.
+	 * @param int    $status Status.
+	 * @param string $error  Code.
+	 * @param int    $bytes  Bytes produced.
+	 * @param int    $saved  Bytes saved.
 	 * @return array
 	 */
 	protected static function result( $status, $error = '', $bytes = 0, $saved = 0 ) {

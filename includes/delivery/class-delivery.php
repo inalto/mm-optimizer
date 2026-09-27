@@ -1,6 +1,6 @@
 <?php
 /**
- * Scelta e attivazione della modalita' di consegna.
+ * Chooses and arms the delivery mode.
  *
  * @package MM_Optimizer
  */
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 class Delivery {
 
 	/**
-	 * Registra gli agganci della modalita' attiva.
+	 * Registers the hooks for the active mode.
 	 *
 	 * @return void
 	 */
@@ -34,7 +34,7 @@ class Delivery {
 			return;
 		}
 
-		// Modalita' <picture>.
+		// <picture> mode.
 		if ( Conflicts::blocks( 'picture' ) ) {
 			return;
 		}
@@ -50,7 +50,7 @@ class Delivery {
 	}
 
 	/**
-	 * Vero solo su una richiesta di pagina pubblica.
+	 * True only on a public page request.
 	 *
 	 * @return bool
 	 */
@@ -67,7 +67,7 @@ class Delivery {
 			return false;
 		}
 
-		// AMP non ammette <picture>.
+		// AMP does not allow <picture>.
 		if ( function_exists( 'amp_is_request' ) && amp_is_request() ) {
 			return false;
 		}
@@ -76,12 +76,12 @@ class Delivery {
 	}
 
 	/**
-	 * Regola di stile indispensabile.
+	 * The one stylesheet rule that matters.
 	 *
-	 * display: contents toglie il <picture> dall'albero di formattazione, cosi'
-	 * ogni regola flex, ogni posizionamento su griglia e ogni object-fit
-	 * scritti per l'<img> continuano a valere. Senza, racchiudere un'immagine
-	 * in un <picture> rompe i layout che davano l'<img> per figlio diretto.
+	 * display: contents removes the <picture> from the box tree, so every flex
+	 * rule, grid placement and object-fit written for the <img> keeps working.
+	 * Without it, wrapping an image in a <picture> breaks any layout that
+	 * assumed the <img> was a direct child.
 	 *
 	 * @return void
 	 */

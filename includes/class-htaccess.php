@@ -1,6 +1,6 @@
 <?php
 /**
- * Blocco di regole nel file .htaccess.
+ * Rule block in the .htaccess file.
  *
  * @package MM_Optimizer
  */
@@ -14,7 +14,7 @@ class Htaccess {
 	const MARKER = 'MM Optimizer';
 
 	/**
-	 * File su cui si interviene.
+	 * File we operate on.
 	 *
 	 * @return string
 	 */
@@ -23,7 +23,7 @@ class Htaccess {
 	}
 
 	/**
-	 * Allinea il blocco alle impostazioni correnti.
+	 * Brings the block in line with the current settings.
 	 *
 	 * @return bool
 	 */
@@ -34,7 +34,7 @@ class Htaccess {
 
 		$file = self::file();
 
-		// Mai scrivere dove un altro plugin ha gia' messo le sue regole.
+		// Never write where another plugin has already placed its rules.
 		if ( Conflicts::blocks( 'htaccess' ) ) {
 			return self::remove();
 		}
@@ -53,7 +53,7 @@ class Htaccess {
 	}
 
 	/**
-	 * Rimuove il blocco.
+	 * Removes the block.
 	 *
 	 * @return bool
 	 */
@@ -72,7 +72,7 @@ class Htaccess {
 	}
 
 	/**
-	 * Costruisce le regole.
+	 * Builds the rules.
 	 *
 	 * @return array
 	 */
@@ -80,10 +80,10 @@ class Htaccess {
 		$rules = array();
 		$mode  = Options::get( 'delivery.mode', 'picture' );
 
-		// I tipi MIME servono anche in modalita' <picture>: molti server
-		// consegnano .avif come application/octet-stream, e in quel caso
-		// Firefox e Safari scelgono la sorgente AVIF e poi non la decodificano,
-		// senza ripiegare sull'immagine originale.
+		// The MIME types are needed in <picture> mode too: many servers hand
+		// back .avif as application/octet-stream, and when that happens Firefox
+		// and Safari pick the AVIF source and then fail to decode it, with no
+		// fallback to the original image.
 		if ( Options::get( 'delivery.addtype' ) ) {
 			$rules[] = '<IfModule mod_mime.c>';
 			$rules[] = '  AddType image/avif .avif';
@@ -123,9 +123,9 @@ class Htaccess {
 	}
 
 	/**
-	 * Vero se il file e' scrivibile, o lo sarebbe.
+	 * Whether the file is writable, or would be.
 	 *
-	 * @param string $file Percorso.
+	 * @param string $file Path.
 	 * @return bool
 	 */
 	public static function writable( $file ) {

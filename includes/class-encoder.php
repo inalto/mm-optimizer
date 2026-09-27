@@ -1,11 +1,11 @@
 <?php
 /**
- * Codifica di un file sorgente in un formato moderno.
+ * Encodes a source file into a modern format.
  *
- * Il motore non e' scelto qui: arriva dal rilevamento, che lo ha stabilito
- * misurando i byte prodotti sullo stesso campione.
+ * The engine is not chosen here: it comes from detection, which settled it by
+ * measuring the bytes each one produced on the same sample.
  *
- * @package MM_Optimizer;
+ * @package MM_Optimizer
  */
 
 namespace MM_Optimizer;
@@ -15,16 +15,16 @@ defined( 'ABSPATH' ) || exit;
 class Encoder {
 
 	/**
-	 * Codifica una sorgente in una derivata.
+	 * Encodes a source into a derivative.
 	 *
-	 * @param string $source      Percorso della sorgente.
-	 * @param string $dest        Percorso della destinazione.
-	 * @param string $target_mime Tipo MIME di uscita.
-	 * @param int    $quality     Qualita' 1-100.
+	 * @param string $source      Source path.
+	 * @param string $dest        Destination path.
+	 * @param string $target_mime Output MIME type.
+	 * @param int    $quality     Quality, 1-100.
 	 * @return array {
-	 *     @type bool   $ok      Esito.
-	 *     @type string $engine  Motore usato.
-	 *     @type string $error   Codice di errore.
+	 *     @type bool   $ok     Result.
+	 *     @type string $engine Engine used.
+	 *     @type string $error  Error code.
 	 * }
 	 */
 	public static function encode( $source, $dest, $target_mime, $quality ) {
@@ -64,8 +64,8 @@ class Encoder {
 			return self::fail( $engine, 'encode_failed' );
 		}
 
-		// Un motore puo' scrivere un file del formato sbagliato senza segnalare
-		// errore: si controllano i magic bytes prima di fidarsi.
+		// An engine can write a file in the wrong format without reporting an
+		// error: check the magic bytes before trusting it.
 		if ( Base::sniff_mime( $dest ) !== $target_mime ) {
 			self::cleanup( $dest );
 			return self::fail( $engine, 'wrong_format' );
@@ -77,9 +77,9 @@ class Encoder {
 	}
 
 	/**
-	 * Motore risolto per un formato di uscita.
+	 * Engine resolved for an output format.
 	 *
-	 * @param string $target_mime Tipo MIME.
+	 * @param string $target_mime MIME type.
 	 * @return string
 	 */
 	public static function engine_for( $target_mime ) {
@@ -95,21 +95,21 @@ class Encoder {
 		$engine = isset( $caps['encoders'][ $target_mime ]['engine'] ) ? $caps['encoders'][ $target_mime ]['engine'] : '';
 
 		/**
-		 * Filtra il motore usato per un formato di uscita.
+		 * Filters the engine used for an output format.
 		 *
-		 * @param string $engine      Identificativo del motore.
-		 * @param string $target_mime Tipo MIME di uscita.
+		 * @param string $engine      Engine identifier.
+		 * @param string $target_mime Output MIME type.
 		 */
 		return (string) apply_filters( 'mm_optimizer_encoder_for', $engine, $target_mime );
 	}
 
 	/**
-	 * Codifica con GD.
+	 * Encodes with GD.
 	 *
-	 * @param string $source      Sorgente.
-	 * @param string $dest        Destinazione.
-	 * @param string $target_mime Tipo MIME.
-	 * @param int    $quality     Qualita'.
+	 * @param string $source      Source.
+	 * @param string $dest        Destination.
+	 * @param string $target_mime MIME type.
+	 * @param int    $quality     Quality.
 	 * @return bool
 	 */
 	protected static function encode_gd( $source, $dest, $target_mime, $quality ) {
@@ -134,9 +134,9 @@ class Encoder {
 	}
 
 	/**
-	 * Carica una sorgente in GD rispettando il tipo reale.
+	 * Loads a source into GD according to its real type.
 	 *
-	 * @param string $source Percorso.
+	 * @param string $source Path.
 	 * @return resource|\GdImage|false
 	 */
 	protected static function load_gd( $source ) {
@@ -146,8 +146,8 @@ class Encoder {
 
 			case 'image/png':
 				$image = @imagecreatefrompng( $source );
-				// Un PNG a tavolozza va portato a colore pieno, altrimenti
-				// WebP e AVIF perdono la trasparenza.
+				// A palette PNG has to be promoted to true colour, otherwise
+				// WebP and AVIF lose the transparency.
 				if ( $image && ! imageistruecolor( $image ) ) {
 					imagepalettetotruecolor( $image );
 				}
@@ -164,12 +164,12 @@ class Encoder {
 	}
 
 	/**
-	 * Codifica con Imagick.
+	 * Encodes with Imagick.
 	 *
-	 * @param string $source      Sorgente.
-	 * @param string $dest        Destinazione.
-	 * @param string $target_mime Tipo MIME.
-	 * @param int    $quality     Qualita'.
+	 * @param string $source      Source.
+	 * @param string $dest        Destination.
+	 * @param string $target_mime MIME type.
+	 * @param int    $quality     Quality.
 	 * @return bool
 	 */
 	protected static function encode_imagick( $source, $dest, $target_mime, $quality ) {
@@ -196,8 +196,8 @@ class Encoder {
 		} catch ( \Throwable $e ) {
 			Log::add(
 				sprintf(
-					/* translators: %s: messaggio di errore della libreria. */
-					__( 'Imagick ha sollevato un\'eccezione durante la codifica: %s', 'mm-optimizer' ),
+					/* translators: %s: error message from the library. */
+					__( 'Imagick threw an exception while encoding: %s', 'mm-optimizer' ),
 					$e->getMessage()
 				),
 				'error'
@@ -208,13 +208,13 @@ class Encoder {
 	}
 
 	/**
-	 * Codifica con un binario di sistema.
+	 * Encodes with a system binary.
 	 *
-	 * @param string $engine      'cwebp' oppure 'avifenc'.
-	 * @param string $source      Sorgente.
-	 * @param string $dest        Destinazione.
-	 * @param string $target_mime Tipo MIME.
-	 * @param int    $quality     Qualita'.
+	 * @param string $engine      'cwebp' or 'avifenc'.
+	 * @param string $source      Source.
+	 * @param string $dest        Destination.
+	 * @param string $target_mime MIME type.
+	 * @param int    $quality     Quality.
 	 * @return bool
 	 */
 	protected static function encode_binary( $engine, $source, $dest, $target_mime, $quality ) {
@@ -257,13 +257,13 @@ class Encoder {
 	}
 
 	/**
-	 * Stima i byte necessari a GD per aprire un'immagine.
+	 * Estimates the bytes GD needs to open an image.
 	 *
-	 * GD tiene in memoria pixel non compressi: quattro byte per pixel piu'
-	 * un margine per la copia di lavoro.
+	 * GD holds uncompressed pixels in memory: four bytes per pixel plus room
+	 * for a working copy.
 	 *
-	 * @param int $width  Larghezza.
-	 * @param int $height Altezza.
+	 * @param int $width  Width.
+	 * @param int $height Height.
 	 * @return int
 	 */
 	public static function estimate_memory( $width, $height ) {
@@ -271,10 +271,10 @@ class Encoder {
 	}
 
 	/**
-	 * Verifica che ci sia memoria a sufficienza.
+	 * Checks that there is enough memory.
 	 *
-	 * @param int $width  Larghezza.
-	 * @param int $height Altezza.
+	 * @param int $width  Width.
+	 * @param int $height Height.
 	 * @return bool
 	 */
 	public static function memory_available( $width, $height ) {
@@ -291,9 +291,9 @@ class Encoder {
 	}
 
 	/**
-	 * Rimuove una destinazione parziale.
+	 * Removes a partial destination file.
 	 *
-	 * @param string $dest Percorso.
+	 * @param string $dest Path.
 	 * @return void
 	 */
 	protected static function cleanup( $dest ) {
@@ -303,10 +303,10 @@ class Encoder {
 	}
 
 	/**
-	 * Esito negativo.
+	 * Failure result.
 	 *
-	 * @param string $engine Motore.
-	 * @param string $error  Codice.
+	 * @param string $engine Engine.
+	 * @param string $error  Code.
 	 * @return array
 	 */
 	protected static function fail( $engine, $error ) {

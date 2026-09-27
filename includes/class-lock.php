@@ -1,10 +1,11 @@
 <?php
 /**
- * Lucchetto di esecuzione, doppio.
+ * Dual execution lock.
  *
- * Un transient soltanto non basta: con un object cache esterno uno svuotamento
- * lo fa sparire e due worker partono insieme. Un file soltanto non basta:
- * puo' restare orfano. Si usano entrambi, con la stessa chiave casuale.
+ * A transient alone is not enough: with an external object cache, a flush
+ * makes it vanish and two workers start together. A lock file alone is not
+ * enough either: it can be left orphaned. Both are used, with the same
+ * random key.
  *
  * @package MM_Optimizer
  */
@@ -19,14 +20,14 @@ class Lock {
 	const TTL = 300;
 
 	/**
-	 * Chiave posseduta da questo processo.
+	 * Key held by this process.
 	 *
 	 * @var string
 	 */
 	protected static $token = '';
 
 	/**
-	 * Percorso del file di lucchetto.
+	 * Path to the lock file.
 	 *
 	 * @return string
 	 */
@@ -35,7 +36,7 @@ class Lock {
 	}
 
 	/**
-	 * Tenta di acquisire il lucchetto.
+	 * Attempts to acquire the lock.
 	 *
 	 * @return bool
 	 */
@@ -48,10 +49,10 @@ class Lock {
 
 		set_transient( self::KEY, $token, self::TTL );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- lucchetto: serve LOCK_EX, non la Filesystem API.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- lock file: LOCK_EX is required, the Filesystem API cannot provide it.
 		@file_put_contents( self::file(), $token, LOCK_EX );
 
-		// Rilettura: se due processi hanno scritto insieme, uno solo vince.
+		// Read back: if two processes wrote at once, only one wins.
 		if ( self::read_file() !== $token || get_transient( self::KEY ) !== $token ) {
 			return false;
 		}
@@ -62,7 +63,7 @@ class Lock {
 	}
 
 	/**
-	 * Vero se un altro processo tiene il lucchetto.
+	 * Whether another process holds the lock.
 	 *
 	 * @return bool
 	 */
@@ -77,7 +78,7 @@ class Lock {
 			return false;
 		}
 
-		// Un file piu' vecchio del TTL e' un residuo di un processo morto.
+		// A file older than the TTL is the residue of a dead process.
 		if ( ( time() - (int) @filemtime( $file ) ) > self::TTL ) {
 			@unlink( $file );
 			return false;
@@ -87,7 +88,7 @@ class Lock {
 	}
 
 	/**
-	 * Prolunga il lucchetto durante un lotto lungo.
+	 * Extends the lock during a long batch.
 	 *
 	 * @return void
 	 */
@@ -101,7 +102,7 @@ class Lock {
 	}
 
 	/**
-	 * Rilascia il lucchetto, solo se e' ancora il nostro.
+	 * Releases the lock, but only if it is still ours.
 	 *
 	 * @return void
 	 */
@@ -122,12 +123,12 @@ class Lock {
 	}
 
 	/**
-	 * Contenuto del file di lucchetto.
+	 * Contents of the lock file.
 	 *
 	 * @return string
 	 */
 	protected static function read_file() {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_get_contents -- lucchetto locale.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_get_contents -- local lock file.
 		return @is_file( self::file() ) ? trim( (string) @file_get_contents( self::file() ) ) : '';
 	}
 }

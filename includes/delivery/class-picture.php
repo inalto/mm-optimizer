@@ -1,6 +1,6 @@
 <?php
 /**
- * Riscrittura di <img> in <picture> con un srcset per formato.
+ * Rewrites <img> into <picture> with one srcset per format.
  *
  * @package MM_Optimizer
  */
@@ -19,30 +19,29 @@ defined( 'ABSPATH' ) || exit;
 class Picture {
 
 	/**
-	 * Esistenza delle derivate, memorizzata per richiesta.
+	 * Derivative existence, memoized per request.
 	 *
 	 * @var array
 	 */
 	protected static $known = array();
 
 	/**
-	 * Registra gli agganci.
+	 * Registers the hooks.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		// Il nucleo passa l'identificativo dell'allegato: nessuna congettura
-		// sull'URL.
+		// Core hands us the attachment ID: no guessing from the URL.
 		add_filter( 'wp_content_img_tag', array( __CLASS__, 'filter_content_img' ), 20, 3 );
 		add_filter( 'wp_get_attachment_image', array( __CLASS__, 'filter_attachment_image' ), 20, 5 );
 	}
 
 	/**
-	 * Immagini dentro il contenuto.
+	 * Images inside post content.
 	 *
-	 * @param string $html    Markup dell'immagine.
-	 * @param string $context Contesto.
-	 * @param int    $id      Allegato.
+	 * @param string $html    Image markup.
+	 * @param string $context Context.
+	 * @param int    $id      Attachment.
 	 * @return string
 	 */
 	public static function filter_content_img( $html, $context = '', $id = 0 ) {
@@ -50,13 +49,13 @@ class Picture {
 	}
 
 	/**
-	 * Immagini generate da wp_get_attachment_image().
+	 * Images produced by wp_get_attachment_image().
 	 *
 	 * @param string       $html       Markup.
-	 * @param int          $id         Allegato.
-	 * @param string|array $size       Dimensione.
-	 * @param bool         $icon       Icona.
-	 * @param array        $attributes Attributi.
+	 * @param int          $id         Attachment.
+	 * @param string|array $size       Size.
+	 * @param bool         $icon       Icon.
+	 * @param array        $attributes Attributes.
 	 * @return string
 	 */
 	public static function filter_attachment_image( $html, $id = 0, $size = '', $icon = false, $attributes = array() ) {
@@ -64,9 +63,9 @@ class Picture {
 	}
 
 	/**
-	 * Racchiude un <img> in un <picture>, se ha senso farlo.
+	 * Wraps an <img> in a <picture>, when that makes sense.
 	 *
-	 * @param string $html Markup dell'immagine.
+	 * @param string $html Image markup.
 	 * @return string
 	 */
 	public static function wrap( $html ) {
@@ -74,7 +73,7 @@ class Picture {
 			return $html;
 		}
 
-		// Mai raddoppiare l'involucro.
+		// Never wrap twice.
 		if ( false !== stripos( $html, '<picture' ) ) {
 			return $html;
 		}
@@ -101,9 +100,9 @@ class Picture {
 			return $html;
 		}
 
-		// Un caricatore differito tiene l'URL vero in un attributo dati: il
-		// src e' solo un segnaposto, e costruirci sopra le sorgenti darebbe
-		// un <picture> che punta al segnaposto.
+		// A lazy loader keeps the real URL in a data attribute: the src is only
+		// a placeholder, and building the sources on top of it would produce a
+		// <picture> pointing at the placeholder.
 		if ( self::is_lazy_placeholder( $tags ) ) {
 			return $html;
 		}
@@ -139,10 +138,10 @@ class Picture {
 	}
 
 	/**
-	 * Formati abilitati, producibili e da consegnare.
+	 * Formats that are enabled, producible and meant for delivery.
 	 *
-	 * L'ordine conta: il browser prende la prima sorgente che sa leggere,
-	 * quindi AVIF va prima di WebP.
+	 * Order matters: the browser takes the first source it can read, so AVIF
+	 * comes before WebP.
 	 *
 	 * @return array
 	 */
@@ -155,16 +154,16 @@ class Picture {
 			}
 		}
 
-		// Paths::formats() e' gia' in ordine di preferenza.
+		// Paths::formats() is already in preference order.
 		return array_values( array_intersect( array_keys( Paths::formats() ), $out ) );
 	}
 
 	/**
-	 * Estrae le coppie URL/descrittore dell'immagine.
+	 * Extracts the URL/descriptor pairs from the image.
 	 *
-	 * @param string $src    URL principale.
-	 * @param string $srcset Attributo srcset.
-	 * @return array URL => descrittore.
+	 * @param string $src    Main URL.
+	 * @param string $srcset The srcset attribute.
+	 * @return array URL => descriptor.
 	 */
 	protected static function candidates( $src, $srcset ) {
 		$out = array();
@@ -194,17 +193,17 @@ class Picture {
 	}
 
 	/**
-	 * Costruisce una sorgente per un formato.
+	 * Builds a <source> for one format.
 	 *
-	 * Regola del tutto o niente: se manca anche una sola derivata, la sorgente
-	 * viene omessa. Un srcset parziale fa scegliere al browser una risoluzione
-	 * piu' bassa di quella che avrebbe preso dall'<img>, con un peggioramento
-	 * visibile e quasi impossibile da diagnosticare.
+	 * All-or-nothing rule: if even one derivative is missing, the source is left
+	 * out. A partial srcset makes the browser pick a lower resolution than it
+	 * would have taken from the <img>, a visible regression that is nearly
+	 * impossible to diagnose.
 	 *
-	 * @param array  $candidates URL => descrittore.
-	 * @param string $format     Formato.
-	 * @param string $sizes      Attributo sizes.
-	 * @return string Markup della sorgente, oppure stringa vuota.
+	 * @param array  $candidates URL => descriptor.
+	 * @param string $format     Format.
+	 * @param string $sizes      The sizes attribute.
+	 * @return string Source markup, or an empty string.
 	 */
 	protected static function build_source( array $candidates, $format, $sizes ) {
 		$available = self::availability( array_keys( $candidates ) );
@@ -237,13 +236,13 @@ class Picture {
 	}
 
 	/**
-	 * Quali derivate esistono, per un insieme di URL.
+	 * Which derivatives exist, for a set of URLs.
 	 *
-	 * Una sola interrogazione per gruppo, con memoria di richiesta e cache
-	 * oggetti: una pagina puo' richiedere centinaia di queste verifiche.
+	 * One query per group, with a per-request memo and the object cache: a single
+	 * page can ask for hundreds of these checks.
 	 *
-	 * @param array $urls URL.
-	 * @return array URL => array( formato => bool ).
+	 * @param array $urls URLs.
+	 * @return array URL => array( format => bool ).
 	 */
 	protected static function availability( array $urls ) {
 		$out     = array();
@@ -293,9 +292,9 @@ class Picture {
 	}
 
 	/**
-	 * Vero se l'immagine e' gestita da un caricatore differito.
+	 * Whether the image is handled by a lazy loader.
 	 *
-	 * @param \WP_HTML_Tag_Processor $tags Processore posizionato sull'img.
+	 * @param \WP_HTML_Tag_Processor $tags Processor positioned on the img.
 	 * @return bool
 	 */
 	protected static function is_lazy_placeholder( $tags ) {
@@ -313,9 +312,9 @@ class Picture {
 	}
 
 	/**
-	 * Vero se una classe e' nell'elenco di esclusione.
+	 * Whether a class is in the exclusion list.
 	 *
-	 * @param string $class_attr Attributo class.
+	 * @param string $class_attr The class attribute.
 	 * @return bool
 	 */
 	protected static function is_excluded( $class_attr ) {

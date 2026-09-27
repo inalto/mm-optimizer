@@ -1,0 +1,804 @@
+# Italian translation for MM Optimizer.
+# Copyright (C) 2026 Inalto
+# This file is distributed under the same license as the MM Optimizer plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: MM Optimizer 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/inalto/mm-optimizer/issues\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: hand-paired from the original Italian source\n"
+
+#. Plugin Name of the plugin
+#: admin/class-settings.php:56
+msgid "MM Optimizer"
+msgstr "MM Optimizer"
+
+#. Plugin URI of the plugin
+#: mm-optimizer.php
+msgid "https://inalto.com/"
+msgstr "https://inalto.com/"
+
+#. Description of the plugin
+#: mm-optimizer.php
+msgid "Image optimization for WordPress. Detects the graphics libraries available on the host, verifies which encoders actually work, and proposes the optimal settings. Generates WebP and AVIF derivatives with discrete optimization levels and delivers them responsively. Never modifies the original files. No paid tier, no limits."
+msgstr "Ottimizzazione immagini per WordPress. Rileva le librerie grafiche disponibili sull'host, verifica quali codificatori funzionano davvero e propone le impostazioni ottimali. Genera derivate WebP e AVIF con livelli di ottimizzazione predefiniti e le distribuisce in modo responsive. Non modifica mai i file originali. Nessuna funzione a pagamento, nessuna limitazione."
+
+#. Author of the plugin
+#: mm-optimizer.php
+msgid "Inalto"
+msgstr "Inalto"
+
+#: admin/class-admin.php:54
+msgid "Settings"
+msgstr "Impostazioni"
+
+#: admin/class-admin.php:83
+msgid "Detecting…"
+msgstr "Rilevamento in corso..."
+
+#: admin/class-admin.php:84
+msgid "Applying…"
+msgstr "Applicazione in corso..."
+
+#: admin/class-admin.php:85
+msgid "The operation failed."
+msgstr "Operazione non riuscita."
+
+#: admin/class-admin.php:86
+msgid "Replace the current settings with the recommended ones?"
+msgstr "Sostituire le impostazioni attuali con quelle consigliate?"
+
+#: admin/class-admin.php:87
+msgid "Scanning the library…"
+msgstr "Analisi della libreria in corso..."
+
+#. translators: 1: derivatives created, 2: files skipped, 3: errors, 4: space saved, 5: files remaining.
+#: admin/class-admin.php:89
+msgid "Created %1$s · skipped %2$s · errors %3$s · saved %4$s · %5$s remaining"
+msgstr "Create %1$s · saltate %2$s · errori %3$s · risparmiati %4$s · rimangono %5$s"
+
+#: admin/class-admin.php:90
+msgid "Conversion complete."
+msgstr "Conversione completata."
+
+#: admin/class-admin.php:91
+msgid "Conversion stopped."
+msgstr "Conversione interrotta."
+
+#: admin/class-admin.php:128
+msgid "%s already handles this site's images, so MM Optimizer keeps its delivery switched off to avoid overlapping. Conversion carries on: the derivatives will be ready when you decide to switch over."
+msgid_plural "%s already handle this site's images, so MM Optimizer keeps its delivery switched off to avoid overlapping. Conversion carries on: the derivatives will be ready when you decide to switch over."
+msgstr[0] "%s gestisce già le immagini di questo sito, quindi la consegna di MM Optimizer resta spenta per non sovrapporsi. La conversione continua a funzionare: le derivate saranno pronte quando deciderai di passare."
+msgstr[1] "%s gestiscono già le immagini di questo sito, quindi la consegna di MM Optimizer resta spenta per non sovrapporsi. La conversione continua a funzionare: le derivate saranno pronte quando deciderai di passare."
+
+#: admin/class-admin.php:141
+msgid "Go to plugins"
+msgstr "Vai ai plugin"
+
+#: admin/class-admin.php:166
+msgid "No graphics library on this server can produce WebP or AVIF. Open the Diagnostics tab: it lists exactly what to ask your host for."
+msgstr "Nessuna libreria grafica di questo server sa produrre WebP o AVIF. Apri la scheda Diagnostica: elenca esattamente cosa chiedere all'hosting."
+
+#: admin/class-admin.php:170
+msgid "Open diagnostics"
+msgstr "Apri la diagnostica"
+
+#: admin/class-ajax.php:38
+msgid "Insufficient permissions."
+msgstr "Permessi insufficienti."
+
+#. translators: %d: detection duration in milliseconds.
+#: admin/class-ajax.php:57
+msgid "Detection completed in %d ms."
+msgstr "Rilevamento completato in %d ms."
+
+#. translators: %s: name of the optimization level applied.
+#: admin/class-ajax.php:81
+msgid "Configuration applied: %s level."
+msgstr "Configurazione applicata: livello %s."
+
+#: admin/class-ajax.php:153
+msgid "Queue cleared."
+msgstr "Coda svuotata."
+
+#. translators: %s: name of the resulting optimization level.
+#: admin/class-ajax.php:170
+msgid "Settings imported. Resulting level: %s."
+msgstr "Impostazioni importate. Livello risultante: %s."
+
+#. translators: 1: files adopted in this pass, 2: files ignored.
+#: admin/class-ajax.php:194
+msgid "Adopted %1$s files, ignored %2$s."
+msgstr "Adottati %1$s file, ignorati %2$s."
+
+#: admin/class-settings.php:23
+msgid "Bulk conversion"
+msgstr "Conversione in blocco"
+
+#: admin/class-bulk.php:28
+msgid "No format is active, so there is nothing to convert. Check the Diagnostics tab."
+msgstr "Nessun formato attivo: non c'è nulla da convertire. Controlla la scheda Diagnostica."
+
+#. translators: 1: number of images, 2: list of formats.
+#: admin/class-bulk.php:35
+msgid "The library holds %1$s images. Derivatives will be generated in these formats: %2$s. Original files are never modified."
+msgstr "La libreria contiene %1$s immagini. Verranno generate le derivate nei formati: %2$s. I file originali non vengono mai modificati."
+
+#: admin/class-bulk.php:42
+msgid "Derivatives generated"
+msgstr "Derivate generate"
+
+#: admin/class-bulk.php:43
+msgid "Skipped (no gain)"
+msgstr "Saltate (nessun guadagno)"
+
+#: admin/class-bulk.php:44
+msgid "Errors"
+msgstr "Errori"
+
+#: admin/class-bulk.php:45
+msgid "Space saved"
+msgstr "Spazio risparmiato"
+
+#: admin/class-bulk.php:46
+msgid "Queued"
+msgstr "In coda"
+
+#: admin/class-bulk.php:51
+msgid "Ready."
+msgstr "Pronto."
+
+#: admin/class-bulk.php:52
+msgid "Start conversion"
+msgstr "Avvia la conversione"
+
+#: admin/class-bulk.php:53
+msgid "Stop"
+msgstr "Ferma"
+
+#: admin/class-bulk.php:56
+msgid "Conversion continues while this page stays open, and picks up where it left off if you close it. WordPress cron is not reliable on every host, so running it from the browser is the main route rather than a fallback."
+msgstr "La conversione prosegue finchè questa pagina resta aperta, e riprende da dove si era interrotta se la chiudi. Su questo sito il cron di WordPress non è affidabile, quindi la lavorazione dal browser è la strada principale, non un ripiego."
+
+#: admin/class-bulk.php:74
+msgid "Import from Converter for Media"
+msgstr "Importazione da Converter for Media"
+
+#: admin/class-bulk.php:77
+msgid "The previous plugin's settings were found, but no already-converted files."
+msgstr "Sono state trovate le impostazioni del plugin precedente, ma nessun file già convertito."
+
+#. translators: 1: number of WebP files, 2: number of AVIF files, 3: space occupied.
+#: admin/class-bulk.php:82
+msgid "The previous plugin produced %1$s WebP files and %2$s AVIF files, taking %3$s in total."
+msgstr "Il plugin precedente ha prodotto %1$s file WebP e %2$s file AVIF, per %3$s complessivi."
+
+#: admin/class-bulk.php:90
+msgid "Nearly all of those files are WebP. AVIF, which on this server pays off around 20% more than WebP, is effectively absent: regenerating from scratch is worth more than adopting the existing files. Adoption is still the quick route if you want to switch over now without waiting for the conversion."
+msgstr "Quasi tutti quei file sono WebP. L'AVIF, che su questo server rende circa il 20% in più del WebP, è praticamente assente: rigenerare da capo conviene più che adottare i file esistenti. L'adozione resta la strada rapida se vuoi passare subito senza attendere la conversione."
+
+#: admin/class-bulk.php:95
+msgid "Import the settings"
+msgstr "Importa le impostazioni"
+
+#: admin/class-bulk.php:98
+msgid "Adopt the converted files"
+msgstr "Adotta i file già convertiti"
+
+#: admin/class-report.php:44
+msgid "How suitable this server is"
+msgstr "Idoneita' di questo server"
+
+#. translators: 1: date and time of the last detection run, 2: duration in milliseconds.
+#: admin/class-report.php:48
+msgid "Last detection: %1$s (%2$d ms)."
+msgstr "Ultimo rilevamento: %1$s (%2$d ms)."
+
+#: admin/class-report.php:54
+msgid "Run detection again"
+msgstr "Riesegui il rilevamento"
+
+#: admin/class-report.php:55
+msgid "Apply the recommended configuration"
+msgstr "Applica la configurazione consigliata"
+
+#: admin/class-report.php:68
+msgid "This server can do everything that is needed: images can be optimized without compromises."
+msgstr "Questo server sa fare tutto il necessario: le immagini possono essere ottimizzate senza compromessi."
+
+#: admin/class-report.php:71
+msgid "This server can optimize images, but something is missing. Read the reasons below: they say what to ask your host for."
+msgstr "Questo server può ottimizzare le immagini, ma qualcosa manca. Leggi le motivazioni qui sotto: indicano cosa chiedere all'hosting."
+
+#: admin/class-report.php:74
+msgid "This server has almost none of what is required. The reasons below list the packages to request from your host."
+msgstr "Questo server non dispone di quasi nulla di quello che serve. Le motivazioni qui sotto elencano i pacchetti da richiedere all'hosting."
+
+#: admin/class-report.php:92
+msgid "Graphics libraries detected"
+msgstr "Librerie grafiche rilevate"
+
+#: admin/class-report.php:93
+msgid "Each cell reports the outcome of a real test: the plugin encodes a known sample and checks the bytes it produced. Merely claimed support is not enough, because that is exactly what produces corrupted files without warning."
+msgstr "Ogni cella riporta l'esito di una prova reale: il plugin codifica un campione noto e ne verifica i byte prodotti. Il supporto soltanto dichiarato non basta, perché è proprio quello che produce file corrotti senza avvisare."
+
+#: admin/class-report.php:217
+msgid "Format"
+msgstr "Formato"
+
+#: admin/class-report.php:106
+msgid "(absent)"
+msgstr "(assente)"
+
+#: admin/class-report.php:111
+msgid "System binaries"
+msgstr "Binari di sistema"
+
+#. translators: 1: bytes produced, 2: milliseconds taken.
+#: admin/class-report.php:156
+msgid "Test passed: %1$d bytes in %2$s ms."
+msgstr "Prova superata: %1$d byte in %2$s ms."
+
+#: admin/class-report.php:161
+msgid "verified"
+msgstr "verificato"
+
+#: admin/class-report.php:167
+msgid "claimed"
+msgstr "dichiarato"
+
+#: admin/class-report.php:181
+msgid "This library does not claim the format."
+msgstr "Il formato non è dichiarato da questa libreria."
+
+#: admin/class-report.php:182
+msgid "The encoding call failed."
+msgstr "La chiamata di codifica è fallita."
+
+#: admin/class-report.php:183
+msgid "No file was produced."
+msgstr "Nessun file prodotto."
+
+#: admin/class-report.php:184
+msgid "The file produced was empty."
+msgstr "File prodotto vuoto."
+
+#: admin/class-report.php:185
+msgid "The file produced is not in the requested format."
+msgstr "Il file prodotto non è nel formato richiesto."
+
+#: admin/class-report.php:186
+msgid "The file produced is too large: the library is not compressing."
+msgstr "Il file prodotto è troppo grande: la libreria non sta comprimendo."
+
+#: admin/class-report.php:187
+msgid "The file produced cannot be read back."
+msgstr "Il file prodotto non è rileggibile."
+
+#: admin/class-report.php:188
+msgid "The library threw an exception."
+msgstr "La libreria ha sollevato un'eccezione."
+
+#: admin/class-report.php:189
+msgid "Test sample not found."
+msgstr "Campione di prova non trovato."
+
+#: admin/class-report.php:190
+msgid "The temporary directory is not writable."
+msgstr "Cartella temporanea non scrivibile."
+
+#: admin/class-report.php:191
+msgid "The binary is not present on this server."
+msgstr "Binario non presente sul server."
+
+#: admin/class-report.php:192
+msgid "PHP execution functions are disabled."
+msgstr "Le funzioni di esecuzione di PHP sono disattivate."
+
+#: admin/class-report.php:193
+msgid "Managed host: binary discovery was skipped."
+msgstr "Hosting gestito: la ricerca dei binari è stata saltata."
+
+#: admin/class-report.php:194
+msgid "The binary did not shrink the test sample."
+msgstr "Il binario non ha ridotto il campione di prova."
+
+#: admin/class-report.php:195
+msgid "The detection time limit was reached."
+msgstr "Tempo massimo di rilevamento superato."
+
+#: admin/class-report.php:196
+msgid "Not tested."
+msgstr "Non sottoposto a prova."
+
+#: admin/class-report.php:213
+msgid "Engine comparison"
+msgstr "Confronto fra i motori"
+
+#: admin/class-report.php:214
+msgid "Real measurements against a 512x384 test photograph. The tiny sample used for verification is not enough to establish which engine compresses best: at that size the differences between engines disappear."
+msgstr "Misure reali su una fotografia di prova da 512x384. Il campione minuscolo usato per la verifica non basta a stabilire chi comprime meglio: su un'immagine di quelle dimensioni le differenze fra i motori spariscono."
+
+#: admin/class-report.php:218
+msgid "Engine"
+msgstr "Motore"
+
+#: admin/class-report.php:219
+msgid "Size"
+msgstr "Dimensione"
+
+#: admin/class-report.php:220
+msgid "Time"
+msgstr "Tempo"
+
+#: admin/class-report.php:221
+msgid "Outcome"
+msgstr "Esito"
+
+#: admin/class-report.php:239
+msgid "chosen"
+msgstr "scelto"
+
+#: admin/class-report.php:240
+msgid "alternative"
+msgstr "alternativa"
+
+#: admin/class-report.php:255
+msgid "Recommended configuration"
+msgstr "Configurazione consigliata"
+
+#: admin/class-report.php:259
+msgid "To resolve"
+msgstr "Da risolvere"
+
+#: admin/class-report.php:285
+msgid "PHP version"
+msgstr "Versione di PHP"
+
+#: admin/class-report.php:286
+msgid "Operating system"
+msgstr "Sistema operativo"
+
+#: admin/class-report.php:287
+msgid "Memory limit"
+msgstr "Limite di memoria"
+
+#: admin/class-report.php:288
+msgid "unlimited"
+msgstr "illimitato"
+
+#: admin/class-report.php:288
+msgid "Maximum execution time"
+msgstr "Tempo massimo di esecuzione"
+
+#: admin/class-report.php:289
+msgid "Command execution"
+msgstr "Esecuzione di comandi"
+
+#: admin/class-report.php:289
+msgid "available"
+msgstr "disponibile"
+
+#: admin/class-report.php:289
+msgid "unavailable"
+msgstr "non disponibile"
+
+#: admin/class-report.php:290
+msgid "Managed host"
+msgstr "Hosting gestito"
+
+#: admin/class-report.php:295
+msgid "no"
+msgstr "no"
+
+#: admin/class-report.php:291
+msgid "open_basedir"
+msgstr "open_basedir"
+
+#: admin/class-report.php:291
+msgid "not set"
+msgstr "non impostato"
+
+#: admin/class-report.php:292
+msgid "Uploads directory writable"
+msgstr "Cartella upload scrivibile"
+
+#: admin/class-report.php:295
+msgid "yes"
+msgstr "si"
+
+#: admin/class-report.php:293
+msgid "PHP file uploads"
+msgstr "Caricamento file PHP"
+
+#: admin/class-report.php:293
+msgid "enabled"
+msgstr "attivo"
+
+#: admin/class-report.php:293
+msgid "DISABLED"
+msgstr "DISATTIVATO"
+
+#: admin/class-report.php:294
+msgid "MIME type for .avif"
+msgstr "Tipo MIME per .avif"
+
+#: admin/class-report.php:295
+msgid ".htaccess writable"
+msgstr ".htaccess scrivibile"
+
+#: admin/class-report.php:298
+msgid "Environment"
+msgstr "Ambiente"
+
+#: admin/class-report.php:316
+msgid "could not be checked"
+msgstr "non verificabile"
+
+#: admin/class-report.php:320
+msgid "correct"
+msgstr "corretto"
+
+#: admin/class-report.php:321
+msgid "WRONG: the server does not know image/avif"
+msgstr "ERRATO: il server non conosce image/avif"
+
+#: admin/class-settings.php:21
+msgid "Diagnostics"
+msgstr "Diagnostica"
+
+#: admin/class-settings.php:22
+msgid "Formats and quality"
+msgstr "Formati e qualità"
+
+#: admin/class-settings.php:24
+msgid "Delivery"
+msgstr "Consegna"
+
+#: admin/class-settings.php:25
+msgid "Advanced"
+msgstr "Avanzate"
+
+#: admin/class-settings.php:110
+msgid "Optimization level"
+msgstr "Livello di ottimizzazione"
+
+#: admin/class-settings.php:111
+msgid "The savings shown come from real measurements on a 2048 px photograph: they are not convenient estimates."
+msgstr "I risparmi indicati derivano da misure reali su una fotografia da 2048 px: non sono stime di comodo."
+
+#. translators: 1: WebP quality, 2: estimated WebP saving, 3: AVIF quality, 4: estimated AVIF saving.
+#: admin/class-settings.php:127
+msgid "WebP q%1$d (about -%2$d%%) · AVIF q%3$d (about -%4$d%%)"
+msgstr "WebP q%1$d (circa -%2$d%%) · AVIF q%3$d (circa -%4$d%%)"
+
+#: admin/class-settings.php:141
+msgid "Formats to generate"
+msgstr "Formati da generare"
+
+#: admin/class-settings.php:153
+msgid "Generate the derivatives"
+msgstr "Genera le derivate"
+
+#: admin/class-settings.php:158
+msgid "Deliver to the browser"
+msgstr "Consegna al browser"
+
+#. translators: %s: name of the encoding engine.
+#: admin/class-settings.php:164
+msgid "Engine in use: %s (chosen by detection)."
+msgstr "Motore in uso: %s (scelto dal rilevamento)."
+
+#: admin/class-settings.php:168
+msgid "No encoder on this server supports this format."
+msgstr "Nessun codificatore disponibile su questo server per questo formato."
+
+#: admin/class-settings.php:175
+msgid "Custom values"
+msgstr "Valori personalizzati"
+
+#: admin/class-settings.php:176
+msgid "Used only when the level is set to Custom."
+msgstr "Usati soltanto quando il livello è impostato su Personalizzato."
+
+#: admin/class-settings.php:180
+msgid "WebP quality from JPEG"
+msgstr "Qualita' WebP da JPEG"
+
+#: admin/class-settings.php:181
+msgid "WebP quality from PNG"
+msgstr "Qualita' WebP da PNG"
+
+#: admin/class-settings.php:182
+msgid "AVIF quality from JPEG"
+msgstr "Qualita' AVIF da JPEG"
+
+#: admin/class-settings.php:183
+msgid "AVIF quality from PNG"
+msgstr "Qualita' AVIF da PNG"
+
+#: admin/class-settings.php:184
+msgid "AVIF speed (0 slow, 10 fast)"
+msgstr "Velocita' AVIF (0 lento, 10 rapido)"
+
+#: admin/class-settings.php:185
+msgid "cwebp method (0-6)"
+msgstr "Metodo cwebp (0-6)"
+
+#: admin/class-settings.php:186
+msgid "Minimum saving to keep the file (%)"
+msgstr "Risparmio minimo per conservare il file (%)"
+
+#: admin/class-settings.php:187
+msgid "Skip images smaller than (bytes)"
+msgstr "Ignora le immagini sotto (byte)"
+
+#. translators: %s: list of conflicting plugins.
+#: admin/class-settings.php:213
+msgid "Delivery is suspended: %s already handles this site's images. The settings below stay editable and will take effect as soon as the other plugin is deactivated."
+msgstr "La consegna è sospesa: %s gestisce già le immagini di questo sito. Le impostazioni qui sotto restano modificabili e avranno effetto appena l'altro plugin sara' disattivato."
+
+#: admin/class-settings.php:221
+msgid "Mode"
+msgstr "Modalita'"
+
+#: admin/class-settings.php:224
+msgid "&lt;picture&gt; markup (recommended)"
+msgstr "Markup &lt;picture&gt; (consigliata)"
+
+#: admin/class-settings.php:225
+msgid ".htaccess content negotiation"
+msgstr "Negoziazione via .htaccess"
+
+#: admin/class-settings.php:226
+msgid "No delivery"
+msgstr "Nessuna consegna"
+
+#: admin/class-settings.php:236
+msgid "<picture> mode puts every variant into the markup and lets the browser choose: it needs no Vary: Accept and leaves page caches and CDNs alone. .htaccess negotiation does not touch the HTML but forces Vary: Accept on every image, which in practice disables CDN caching."
+msgstr "La modalità <picture> inserisce tutte le varianti nel markup e lascia scegliere al browser: non richiede Vary: Accept e non disturba la cache di pagina nè la CDN. La negoziazione via .htaccess non tocca l'HTML ma impone Vary: Accept su ogni immagine, cosa che di fatto disabilita la cache CDN."
+
+#: admin/class-settings.php:240
+msgid "Declare the MIME types in .htaccess"
+msgstr "Dichiara i tipi MIME nel .htaccess"
+
+#: admin/class-settings.php:240
+msgid "Required on many servers: without it .avif files are served as application/octet-stream and Firefox and Safari cannot decode them."
+msgstr "Necessario su molti server: senza, i file .avif vengono serviti come application/octet-stream e Firefox e Safari non li decodificano."
+
+#: admin/class-settings.php:241
+msgid "Rewrite the whole page"
+msgstr "Riscrivi l'intera pagina"
+
+#: admin/class-settings.php:241
+msgid "Only turn this on if the theme produces images that escape WordPress's standard filters. It costs something on every request."
+msgstr "Attivalo solo se il tema produce immagini che sfuggono ai filtri standard di WordPress. Ha un costo su ogni richiesta."
+
+#: admin/class-settings.php:242
+msgid "Allow partial srcsets"
+msgstr "Consenti srcset parziali"
+
+#: admin/class-settings.php:242
+msgid "Not recommended. If even one derivative is missing the browser can pick a lower resolution than the original, a visible regression that is hard to diagnose."
+msgstr "Sconsigliato. Se manca anche una sola derivata il browser può scegliere una risoluzione più bassa di quella originale, con un peggioramento visibile e difficile da diagnosticare."
+
+#: admin/class-settings.php:243
+msgid "Check every derivative on disk"
+msgstr "Verifica su disco ogni derivata"
+
+#: admin/class-settings.php:243
+msgid "Safer but slower: it adds hundreds of filesystem calls per page. The database is normally enough."
+msgstr "Piu' sicuro ma più lento: aggiunge centinaia di accessi al filesystem per pagina. Normalmente basta il database."
+
+#: admin/class-settings.php:249
+msgid "Enable"
+msgstr "Attiva"
+
+#: admin/class-settings.php:253
+msgid "CSS classes to exclude"
+msgstr "Classi CSS da escludere"
+
+#: admin/class-settings.php:257
+msgid "One class per line. Images carrying it will not be wrapped in a <picture>. This is needed when a stylesheet uses direct-child selectors such as .gallery > img, which stop matching once an element is interposed."
+msgstr "Una classe per riga. Le immagini che la portano non verranno racchiuse in <picture>. Serve quando un foglio di stile usa selettori figlio diretto come .galleria > img, che smettono di funzionare se si interpone un elemento."
+
+#: admin/class-settings.php:273
+msgid "Thumbnail optimization"
+msgstr "Ottimizzazione delle miniature"
+
+#: admin/class-settings.php:287
+msgid "(no tool available on this server)"
+msgstr "(nessuno strumento disponibile su questo server)"
+
+#: admin/class-settings.php:293
+msgid "This applies only to thumbnails WordPress generated. Original files are never modified, under any circumstances."
+msgstr "Riguarda solo le miniature generate da WordPress. I file originali non vengono mai modificati, in nessun caso."
+
+#: admin/class-settings.php:296
+msgid "Sizes to convert"
+msgstr "Dimensioni da convertire"
+
+#: admin/class-settings.php:299
+msgid "Only the ones used in a srcset (recommended)"
+msgstr "Solo quelle usate nel srcset (consigliato)"
+
+#: admin/class-settings.php:300
+msgid "Every registered size"
+msgstr "Tutte le dimensioni registrate"
+
+#. translators: %d: number of registered image sizes.
+#: admin/class-settings.php:314
+msgid "This site has %d registered sizes. Converting them all into two formats multiplies the work and the disk space, often for files no page ever requests."
+msgstr "Questo sito ha %d dimensioni registrate. Convertirle tutte in due formati moltiplica il lavoro e lo spazio occupato, spesso per file che nessuna pagina richiede mai."
+
+#: admin/class-settings.php:319
+msgid "Diagnostic log"
+msgstr "Registro diagnostico"
+
+#: admin/class-settings.php:321
+msgid "Enabled"
+msgstr "Attivo"
+
+#: admin/class-settings.php:323
+msgid "Uninstall"
+msgstr "Disinstallazione"
+
+#: admin/class-settings.php:325
+msgid "When the plugin is deleted, remove its settings, tables and generated derivatives"
+msgstr "Alla rimozione del plugin elimina impostazioni, tabelle e derivate generate"
+
+#: admin/class-settings.php:326
+msgid "Off by default: deactivating the plugin never deletes anything."
+msgstr "Disattivo per impostazione predefinita: disattivare il plugin non cancella mai nulla."
+
+#. translators: %s: error message from the library.
+#: includes/class-encoder.php:200
+msgid "Imagick threw an exception while encoding: %s"
+msgstr "Imagick ha sollevato un'eccezione durante la codifica: %s"
+
+#: includes/class-migrator.php:133
+msgid "Settings imported from Converter for Media."
+msgstr "Impostazioni importate da Converter for Media."
+
+#: includes/class-options.php:265
+msgid ".htaccess mode is not available: another plugin has already written image rewrite rules. Switched to &lt;picture&gt; mode."
+msgstr "Modalita' .htaccess non disponibile: un altro plugin ha già scritto regole di riscrittura per le immagini. Impostata la modalità <picture>."
+
+#: includes/class-presets.php:76
+msgid "Conservative"
+msgstr "Conservativo"
+
+#: includes/class-presets.php:78
+msgid "Balanced"
+msgstr "Bilanciato"
+
+#: includes/class-presets.php:80
+msgid "Aggressive"
+msgstr "Aggressivo"
+
+#: includes/class-presets.php:82
+msgid "Custom"
+msgstr "Personalizzato"
+
+#: includes/class-presets.php:97
+msgid "Highest quality, smaller savings. Suited to photography and portfolios where how the image looks matters more than what it weighs."
+msgstr "Qualita' massima, risparmio più contenuto. Adatto a fotografia e portfolio dove la resa viene prima del peso."
+
+#: includes/class-presets.php:99
+msgid "The recommended compromise: around 45% smaller with WebP and 66% smaller with AVIF, with no visible difference on photographs."
+msgstr "Il compromesso consigliato: circa il 45% in meno con WebP e il 67% in meno con AVIF, senza differenze visibili sulle fotografie."
+
+#: includes/class-presets.php:101
+msgid "Maximum savings: up to 78% smaller with AVIF. Fine texture and gradients may show slight artefacts."
+msgstr "Risparmio massimo: fino al 78% in meno con AVIF. Su texture fini e gradienti possono comparire lievi artefatti."
+
+#: includes/class-presets.php:103
+msgid "Hand-set values. Use the test bench to check them against this site's own images."
+msgstr "Valori impostati a mano. Usa il banco di prova per verificarli sulle immagini di questo sito."
+
+#: includes/class-queue.php:49
+msgid "Every 5 minutes (MM Optimizer)"
+msgstr "Ogni 5 minuti (MM Optimizer)"
+
+#. translators: 1: file path, 2: error message.
+#: includes/class-queue.php:278
+msgid "Conversion failed for %1$s: %2$s"
+msgstr "Conversione fallita per %1$s: %2$s"
+
+#: includes/class-recommender.php:48
+msgid "This server can produce neither WebP nor AVIF: no graphics library passed the functional test. Ask your host to enable GD with WebP and AVIF support, or the Imagick extension."
+msgstr "Questo server non sa produrre nè WebP nè AVIF: nessuna libreria grafica ha superato la prova funzionale. Chiedi all'hosting di abilitare GD con supporto WebP e AVIF, oppure l'estensione Imagick."
+
+#. translators: 1: image format, 2: engine name, 3: bytes produced, 4: explanation of the choice.
+#: includes/class-recommender.php:65
+msgid "%1$s: chose %2$s (%3$s on the test sample) — %4$s"
+msgstr "%1$s: scelto %2$s (%3$s sul campione di prova) — %4$s"
+
+#: includes/class-recommender.php:78
+msgid "AVIF is unavailable: no encoder on this server supports it. It is the format that pays off most (around 67% smaller against WebP's 45%), so it is worth asking your host for a PHP build with AVIF-enabled GD, or the avifenc package."
+msgstr "AVIF non disponibile: nessun codificatore lo supporta. È il formato che rende di più (circa il 67% in meno contro il 45% del WebP), quindi vale la pena chiedere all'hosting un PHP con GD compilato con AVIF, oppure il pacchetto avifenc."
+
+#. translators: 1: memory limit, 2: maximum execution time in seconds.
+#: includes/class-recommender.php:96
+msgid "Conservative level: resources are tight (memory %1$s, time limit %2$d s). Very large images will be skipped rather than allowed to fail the request."
+msgstr "Livello Conservativo: le risorse sono strette (memoria %1$s, tempo massimo %2$d s). Le immagini molto grandi verranno saltate invece di far fallire la richiesta."
+
+#: includes/class-recommender.php:97
+msgid "not declared"
+msgstr "non dichiarata"
+
+#: includes/class-recommender.php:105
+msgid "Balanced level: resources are sufficient. Around 45% smaller with WebP and 66% smaller with AVIF, with no visible difference on photographs."
+msgstr "Livello Bilanciato: risorse sufficienti. Circa il 45% in meno con WebP e il 66% in meno con AVIF, senza differenze visibili sulle fotografie."
+
+#: includes/class-recommender.php:120
+msgid "Lossless JPEG optimization is unavailable: no PHP library can recompress a JPEG without degrading it, which takes a dedicated binary. Ask your host for the jpegoptim package. In the meantime all the gain comes from the WebP and AVIF derivatives."
+msgstr "Ottimizzazione JPEG senza perdita non disponibile: nessuna libreria PHP sa ricomprimere un JPEG senza degradarlo, serve un binario dedicato. Chiedi all'hosting il pacchetto jpegoptim. Nel frattempo il guadagno arriva tutto dalle derivate WebP e AVIF."
+
+#: includes/class-recommender.php:129
+msgid "Thumbnail optimization is switched off: EWWW Image Optimizer is active and rewrites the same files. Two optimizers working on one file is a real corruption risk."
+msgstr "Ottimizzazione delle miniature disattivata: EWWW Image Optimizer è attivo e riscrive gli stessi file. Due ottimizzatori sullo stesso file sono un rischio concreto di corruzione."
+
+#. translators: %s: list of conflicting plugins.
+#: includes/class-recommender.php:143
+msgid "Delivery is switched off: %s already handles this site's images. Conversion stays on, so the derivatives are ready: delivery will arm itself once you deactivate the other plugin."
+msgstr "Consegna disattivata: %s gestisce già le immagini di questo sito. La conversione resta attiva, così le derivate sono pronte: la consegna si accendera' da sola quando disattiverai l'altro plugin."
+
+#: includes/class-recommender.php:152
+msgid "Delivery via <picture>: the markup carries every variant and the browser chooses. Unlike .htaccess negotiation it needs no Vary: Accept and leaves page caches and CDNs alone."
+msgstr "Consegna con <picture>: il markup contiene tutte le varianti e sceglie il browser. A differenza della negoziazione via .htaccess non richiede Vary: Accept e non disturba la cache di pagina o la CDN."
+
+#: includes/class-recommender.php:166
+msgid "This server delivers .avif files with the wrong MIME type (it is missing from /etc/mime.types). An AddType line will be written into .htaccess: without it, Firefox and Safari pick the AVIF source and then fail to decode it, with no fallback to the original image."
+msgstr "Questo server consegna i file .avif con il tipo MIME sbagliato (manca da /etc/mime.types). Verra' scritta una riga AddType nel .htaccess: senza, Firefox e Safari scelgono la sorgente AVIF e poi non la decodificano, senza ripiegare sull'immagine originale."
+
+#: includes/class-recommender.php:173
+msgid "AVIF is generated but not delivered: the server returns it with the wrong MIME type and .htaccess is not writable. Delivering a source the browser picks and then cannot decode is worse than not delivering it. Add \"AddType image/avif .avif\" to the server configuration to enable it."
+msgstr "AVIF generato ma non consegnato: il server lo restituisce con il tipo MIME sbagliato e il .htaccess non è scrivibile. Consegnare una sorgente che il browser sceglie e poi non sa decodificare è peggio che non consegnarla. Aggiungi \"AddType image/avif .avif\" alla configurazione del server per abilitarla."
+
+#. translators: %d: number of registered image sizes.
+#: includes/class-recommender.php:189
+msgid "%d image size is registered: only the ones that actually appear in a srcset will be converted."
+msgid_plural "%d image sizes are registered: converting them all into two formats would multiply the work for no benefit, so only the ones that actually appear in a srcset will be converted."
+msgstr[0] "È registrata %d dimensione immagine: verranno convertite solo quelle che compaiono davvero nel srcset."
+msgstr[1] "Sono registrate %d dimensioni immagine: convertirle tutte in due formati moltiplicherebbe il lavoro senza vantaggi, quindi verranno convertite solo quelle che compaiono davvero nel srcset."
+
+#. translators: %s: name of the managed host.
+#: includes/class-recommender.php:212
+msgid "Managed host detected (%s): binary discovery was skipped because they would not be executable, and the queue will use cron rather than loopback requests."
+msgstr "Hosting gestito rilevato (%s): la ricerca dei binari è stata saltata perché non sarebbero eseguibili, e la coda usera' il cron invece delle richieste in loopback."
+
+#: includes/class-recommender.php:223
+msgid "The PHP file_uploads directive is disabled: no Media Library upload can work, with or without this plugin. Bulk conversion of the images already present works regardless."
+msgstr "La direttiva PHP file_uploads è disattivata: nessun caricamento nella Libreria media può funzionare, indipendentemente da questo plugin. La conversione in blocco delle immagini già presenti funziona comunque."
+
+#: includes/class-recommender.php:231
+msgid "The uploads directory is not writable: no derivative can be created."
+msgstr "La cartella degli upload non è scrivibile: non è possibile creare nessuna derivata."
+
+#. translators: 1: library name, 2: MIME type.
+#: includes/class-recommender.php:243
+msgid "%1$s claims to support %2$s but the encoding test failed. The format stays off on purpose: this is exactly the situation that produces silently corrupted files."
+msgstr "%1$s dichiara di supportare %2$s ma la prova di codifica è fallita. Il formato resta disattivato: è esattamente la situazione che produce file corrotti in silenzio."
+
+#: includes/class-recommender.php:269
+msgid "Recommended configuration applied."
+msgstr "Applicata la configurazione consigliata."
+
+#: includes/class-recommender.php:315
+msgid "the only encoder available."
+msgstr "unico codificatore disponibile."
+
+#. translators: %s: list of engines that lost.
+#: includes/class-recommender.php:320
+msgid "tied on bytes with %s, but faster."
+msgstr "a parita' di byte con %s, ma più veloce."
+
+#. translators: %s: list of engines that lost.
+#: includes/class-recommender.php:327
+msgid "produced the smallest file, beating %s."
+msgstr "ha prodotto il file più piccolo, battendo %s."

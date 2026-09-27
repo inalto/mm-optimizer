@@ -1,6 +1,6 @@
 <?php
 /**
- * Accesso alla tabella di tracciamento.
+ * Access to the tracking table.
  *
  * @package MM_Optimizer
  */
@@ -17,7 +17,7 @@ class Records {
 	const STATUS_ERROR   = 3;
 
 	/**
-	 * Nome completo della tabella.
+	 * Fully qualified table name.
 	 *
 	 * @return string
 	 */
@@ -28,13 +28,12 @@ class Records {
 	}
 
 	/**
-	 * Impronta di freschezza di una sorgente.
+	 * Freshness fingerprint of a source.
 	 *
-	 * Dimensione e data di modifica, non il contenuto: passare in rassegna
-	 * 1,3 GB di immagini per calcolarne l'hash non e' accettabile, una
-	 * chiamata a stat() si'.
+	 * Size and modification time, not content: hashing 1.3 GB of images is not
+	 * acceptable, one stat() call is.
 	 *
-	 * @param string $path Percorso.
+	 * @param string $path Path.
 	 * @return string
 	 */
 	public static function hash( $path ) {
@@ -45,9 +44,9 @@ class Records {
 	}
 
 	/**
-	 * Inserisce o aggiorna una riga.
+	 * Inserts or updates a row.
 	 *
-	 * @param array $row Dati della riga.
+	 * @param array $row Row data.
 	 * @return bool
 	 */
 	public static function save( array $row ) {
@@ -70,10 +69,10 @@ class Records {
 
 		$formats = array( '%d', '%s', '%s', '%s', '%d', '%s', '%d', '%d', '%s', '%d', '%s', '%d' );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- tabella propria, nessuna API di WordPress disponibile.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- own table, no WordPress API available.
 		$existing = $wpdb->get_var(
 			$wpdb->prepare(
-				'SELECT id FROM ' . self::table() . ' WHERE source_path = %s AND format = %s', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- nome di tabella interno.
+				'SELECT id FROM ' . self::table() . ' WHERE source_path = %s AND format = %s', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- internal table name.
 				$data['source_path'],
 				$data['format']
 			)
@@ -89,10 +88,10 @@ class Records {
 	}
 
 	/**
-	 * Legge una riga.
+	 * Reads one row.
 	 *
-	 * @param string $source_path Percorso della sorgente.
-	 * @param string $format      Formato.
+	 * @param string $source_path Source path.
+	 * @param string $format      Format.
 	 * @return array|null
 	 */
 	public static function get( $source_path, $format ) {
@@ -112,13 +111,12 @@ class Records {
 	}
 
 	/**
-	 * Legge in blocco le derivate riuscite per un insieme di sorgenti.
+	 * Bulk-reads the successful derivatives for a set of sources.
 	 *
-	 * Una sola interrogazione: nel percorso di consegna una pagina puo'
-	 * chiederne centinaia.
+	 * One query: in the delivery path a page can ask for hundreds of these.
 	 *
-	 * @param array $paths Percorsi assoluti.
-	 * @return array Percorso relativizzato => array di formati disponibili.
+	 * @param array $paths Absolute paths.
+	 * @return array Relativized path => array of available formats.
 	 */
 	public static function available_for( array $paths ) {
 		global $wpdb;
@@ -150,9 +148,9 @@ class Records {
 	}
 
 	/**
-	 * Righe di un allegato.
+	 * Rows belonging to an attachment.
 	 *
-	 * @param int $attachment_id Identificativo.
+	 * @param int $attachment_id Identifier.
 	 * @return array
 	 */
 	public static function for_attachment( $attachment_id ) {
@@ -169,10 +167,10 @@ class Records {
 	}
 
 	/**
-	 * Elimina le righe di una sorgente.
+	 * Deletes the rows for a source.
 	 *
-	 * @param string $source_path Percorso.
-	 * @return int Righe rimosse.
+	 * @param string $source_path Path.
+	 * @return int Rows removed.
 	 */
 	public static function delete_for_path( $source_path ) {
 		global $wpdb;
@@ -182,10 +180,10 @@ class Records {
 	}
 
 	/**
-	 * Elimina le righe di un allegato.
+	 * Deletes the rows for an attachment.
 	 *
-	 * @param int $attachment_id Identificativo.
-	 * @return int Righe rimosse.
+	 * @param int $attachment_id Identifier.
+	 * @return int Rows removed.
 	 */
 	public static function delete_for_attachment( $attachment_id ) {
 		global $wpdb;
@@ -195,7 +193,7 @@ class Records {
 	}
 
 	/**
-	 * Riepilogo per la bacheca.
+	 * Summary for the dashboard.
 	 *
 	 * @return array
 	 */

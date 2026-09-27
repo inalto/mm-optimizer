@@ -1,6 +1,6 @@
 <?php
 /**
- * Coda di lavorazione.
+ * Work queue.
  *
  * @package MM_Optimizer
  */
@@ -15,7 +15,7 @@ class Queue {
 	const SECRET = 'mm_optimizer_worker_secret';
 
 	/**
-	 * Nome della tabella.
+	 * Table name.
 	 *
 	 * @return string
 	 */
@@ -26,40 +26,40 @@ class Queue {
 	}
 
 	/**
-	 * Registra gli agganci.
+	 * Registers the hooks.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		add_filter( 'cron_schedules', array( __CLASS__, 'cron_schedule' ) ); // phpcs:ignore WordPress.WP.CronInterval.ChangeDetected -- intervallo proprio, usato solo dal worker.
+		add_filter( 'cron_schedules', array( __CLASS__, 'cron_schedule' ) ); // phpcs:ignore WordPress.WP.CronInterval.ChangeDetected -- own interval, used only by the worker.
 		add_action( 'mm_optimizer_run_queue', array( __CLASS__, 'run' ) );
 		add_action( 'wp_ajax_mm_optimizer_worker', array( __CLASS__, 'handle_worker' ) );
 		add_action( 'wp_ajax_nopriv_mm_optimizer_worker', array( __CLASS__, 'handle_worker' ) );
 	}
 
 	/**
-	 * Aggiunge un intervallo di cinque minuti.
+	 * Adds a five-minute interval.
 	 *
-	 * @param array $schedules Intervalli.
+	 * @param array $schedules Intervals.
 	 * @return array
 	 */
 	public static function cron_schedule( $schedules ) {
 		$schedules['mm_opt_5min'] = array(
 			'interval' => 300,
-			'display'  => __( 'Ogni 5 minuti (MM Optimizer)', 'mm-optimizer' ),
+			'display'  => __( 'Every 5 minutes (MM Optimizer)', 'mm-optimizer' ),
 		);
 
 		return $schedules;
 	}
 
 	/**
-	 * Accoda un insieme di file.
+	 * Queues a set of files.
 	 *
-	 * @param array  $paths         Percorsi assoluti.
-	 * @param int    $attachment_id Allegato.
-	 * @param string $group         Gruppo di lavoro.
-	 * @param int    $priority      Priorita' (piu' basso = prima).
-	 * @return int Righe inserite.
+	 * @param array  $paths         Absolute paths.
+	 * @param int    $attachment_id Attachment.
+	 * @param string $group         Job group.
+	 * @param int    $priority      Priority (lower runs first).
+	 * @return int Rows inserted.
 	 */
 	public static function push( array $paths, $attachment_id = 0, $group = 'bulk', $priority = 10 ) {
 		global $wpdb;
@@ -109,13 +109,13 @@ class Queue {
 	}
 
 	/**
-	 * Prende in carico un lotto.
+	 * Claims a batch.
 	 *
-	 * Le righe rivendicate da piu' di dieci minuti tornano disponibili: un
-	 * worker ucciso a meta' lotto non blocca la coda, e non serve nessun
-	 * processo di sorveglianza.
+	 * Rows claimed more than ten minutes ago become available again: a worker
+	 * killed mid-batch does not block the queue, and no watchdog process is
+	 * needed.
 	 *
-	 * @param int $limit Numero di righe.
+	 * @param int $limit Number of rows.
 	 * @return array
 	 */
 	public static function claim( $limit = 5 ) {
@@ -149,9 +149,9 @@ class Queue {
 	}
 
 	/**
-	 * Rimuove una riga completata.
+	 * Removes a completed row.
 	 *
-	 * @param int $id Identificativo.
+	 * @param int $id Identifier.
 	 * @return void
 	 */
 	public static function complete( $id ) {
@@ -162,9 +162,9 @@ class Queue {
 	}
 
 	/**
-	 * Rimuove le righe di un allegato.
+	 * Removes an attachment's rows.
 	 *
-	 * @param int $attachment_id Identificativo.
+	 * @param int $attachment_id Identifier.
 	 * @return void
 	 */
 	public static function remove_attachment( $attachment_id ) {
@@ -175,7 +175,7 @@ class Queue {
 	}
 
 	/**
-	 * Quante righe restano.
+	 * How many rows are left.
 	 *
 	 * @return int
 	 */
@@ -187,7 +187,7 @@ class Queue {
 	}
 
 	/**
-	 * Svuota la coda.
+	 * Empties the queue.
 	 *
 	 * @return void
 	 */
@@ -199,10 +199,10 @@ class Queue {
 	}
 
 	/**
-	 * Esegue un lotto, entro un tempo massimo.
+	 * Runs a batch, within a time budget.
 	 *
-	 * @param float|null $deadline Istante limite; se assente viene calcolato.
-	 * @return array Riepilogo del lotto.
+	 * @param float|null $deadline Cut-off instant; computed when absent.
+	 * @return array Batch summary.
 	 */
 	public static function run( $deadline = null ) {
 		if ( ! Lock::acquire() ) {
@@ -237,7 +237,7 @@ class Queue {
 
 		self::update_state( $summary );
 
-		// Se resta lavoro, un altro worker riparte subito.
+		// If work remains, another worker picks up straight away.
 		if ( self::remaining() > 0 ) {
 			self::spawn();
 		}
@@ -246,17 +246,17 @@ class Queue {
 	}
 
 	/**
-	 * Lavora una riga.
+	 * Works one row.
 	 *
-	 * @param array $row     Riga della coda.
-	 * @param array $summary Riepilogo, per riferimento.
+	 * @param array $row     Queue row.
+	 * @param array $summary Summary, by reference.
 	 * @return void
 	 */
 	protected static function process( array $row, array &$summary ) {
 		$path = Base::expand( $row['source_path'] );
 
-		// Un tentativo che fallisce tre volte esce dalla coda: la riga di
-		// tracciamento conserva comunque il motivo.
+		// An attempt that fails three times leaves the queue: the tracking row
+		// still holds the reason.
 		if ( (int) $row['attempts'] > 3 ) {
 			self::complete( $row['id'] );
 			return;
@@ -274,8 +274,8 @@ class Queue {
 			} catch ( \Throwable $e ) {
 				Log::add(
 					sprintf(
-						/* translators: 1: percorso del file, 2: messaggio di errore. */
-						__( 'Conversione fallita per %1$s: %2$s', 'mm-optimizer' ),
+						/* translators: 1: file path, 2: error message. */
+						__( 'Conversion failed for %1$s: %2$s', 'mm-optimizer' ),
 						$path,
 						$e->getMessage()
 					),
@@ -305,7 +305,7 @@ class Queue {
 	}
 
 	/**
-	 * Istante limite del lotto.
+	 * Cut-off instant for a batch.
 	 *
 	 * @return float
 	 */
@@ -313,14 +313,14 @@ class Queue {
 		$max   = (int) ini_get( 'max_execution_time' );
 		$share = (int) Options::get( 'bulk.time_share', 60 );
 
-		// Senza limite dichiarato si sta comunque prudenti.
+		// With no declared limit, stay conservative anyway.
 		$budget = $max > 0 ? ( $max * $share / 100 ) : 60;
 
 		return microtime( true ) + min( 150, max( 10, $budget ) );
 	}
 
 	/**
-	 * Avvia un worker in sottofondo.
+	 * Starts a background worker.
 	 *
 	 * @return bool
 	 */
@@ -349,7 +349,7 @@ class Queue {
 			return true;
 		}
 
-		// Richiesta in loopback non bloccante.
+		// Non-blocking loopback request.
 		$url = add_query_arg(
 			array(
 				'action' => 'mm_optimizer_worker',
@@ -372,16 +372,15 @@ class Queue {
 	}
 
 	/**
-	 * Punto di ingresso del worker in loopback.
+	 * Entry point for the loopback worker.
 	 *
-	 * L'endpoint e' raggiungibile senza autenticazione, quindi non puo'
-	 * basarsi su un nonce: l'accesso e' protetto da un segreto rotante
-	 * confrontato a tempo costante.
+	 * The endpoint is reachable without authentication, so it cannot rely on a
+	 * nonce: access is guarded by a rotating secret compared in constant time.
 	 *
 	 * @return void
 	 */
 	public static function handle_worker() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- endpoint nopriv, protetto dal segreto sotto.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nopriv endpoint, guarded by the secret below.
 		$given = isset( $_GET['secret'] ) ? sanitize_text_field( wp_unslash( $_GET['secret'] ) ) : '';
 
 		if ( ! hash_equals( self::secret(), $given ) ) {
@@ -400,7 +399,7 @@ class Queue {
 	}
 
 	/**
-	 * Segreto del worker, creato alla prima richiesta.
+	 * Worker secret, created on first use.
 	 *
 	 * @return string
 	 */
@@ -416,9 +415,9 @@ class Queue {
 	}
 
 	/**
-	 * Aggiorna lo stato mostrato nella pagina di avanzamento.
+	 * Updates the state shown on the progress screen.
 	 *
-	 * @param array $summary Riepilogo del lotto.
+	 * @param array $summary Batch summary.
 	 * @return void
 	 */
 	protected static function update_state( array $summary ) {
@@ -439,7 +438,7 @@ class Queue {
 	}
 
 	/**
-	 * Stato corrente.
+	 * Current state.
 	 *
 	 * @return array
 	 */
@@ -465,9 +464,9 @@ class Queue {
 	}
 
 	/**
-	 * Azzera lo stato e imposta un nuovo totale.
+	 * Resets the state and sets a new total.
 	 *
-	 * @param int $total Righe accodate.
+	 * @param int $total Rows queued.
 	 * @return void
 	 */
 	public static function reset_state( $total ) {

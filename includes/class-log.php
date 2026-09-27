@@ -1,6 +1,6 @@
 <?php
 /**
- * Registro diagnostico a dimensione limitata.
+ * Bounded diagnostic log.
  *
  * @package MM_Optimizer
  */
@@ -14,11 +14,11 @@ class Log {
 	const KEY = 'mm_optimizer_log';
 
 	/**
-	 * Aggiunge una voce al registro.
+	 * Appends an entry to the log.
 	 *
-	 * @param string $message Messaggio, gia' in chiaro.
-	 * @param string $level   'info', 'warning' oppure 'error'.
-	 * @param array  $context Dati aggiuntivi.
+	 * @param string $message Message, already in plain text.
+	 * @param string $level   'info', 'warning' or 'error'.
+	 * @param array  $context Additional data.
 	 * @return void
 	 */
 	public static function add( $message, $level = 'info', array $context = array() ) {
@@ -47,9 +47,9 @@ class Log {
 	}
 
 	/**
-	 * Voci del registro, dalla piu' recente.
+	 * Log entries, newest first.
 	 *
-	 * @param int $limit Numero massimo di voci.
+	 * @param int $limit Maximum number of entries.
 	 * @return array
 	 */
 	public static function entries( $limit = 100 ) {
@@ -63,7 +63,7 @@ class Log {
 	}
 
 	/**
-	 * Svuota il registro.
+	 * Empties the log.
 	 *
 	 * @return void
 	 */

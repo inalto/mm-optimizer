@@ -1,6 +1,6 @@
 <?php
 /**
- * Utilita' condivise: rilevamento funzioni, percorsi, magic bytes.
+ * Shared helpers: capability probing, paths, magic bytes.
  *
  * @package MM_Optimizer
  */
@@ -12,26 +12,26 @@ defined( 'ABSPATH' ) || exit;
 class Base {
 
 	/**
-	 * Cache di richiesta per function_exists().
+	 * Per-request cache for function_exists().
 	 *
 	 * @var array
 	 */
 	protected static $fn_cache = array();
 
 	/**
-	 * Lista suhosin, calcolata una sola volta.
+	 * Suhosin blacklist, computed once.
 	 *
 	 * @var array|null
 	 */
 	protected static $suhosin = null;
 
 	/**
-	 * Verifica se una funzione PHP e' realmente invocabile.
+	 * Whether a PHP function is genuinely callable.
 	 *
-	 * Non basta function_exists(): disable_functions e la blacklist di suhosin
-	 * possono neutralizzarla lasciando il simbolo definito.
+	 * function_exists() alone is not enough: disable_functions and the suhosin
+	 * blacklist can neutralise a function while leaving the symbol defined.
 	 *
-	 * @param string $name Nome della funzione.
+	 * @param string $name Function name.
 	 * @return bool
 	 */
 	public static function function_exists( $name ) {
@@ -60,7 +60,7 @@ class Base {
 	}
 
 	/**
-	 * Blacklist di suhosin, normalizzata in minuscolo.
+	 * Suhosin blacklist, lowercased.
 	 *
 	 * @return array
 	 */
@@ -87,12 +87,12 @@ class Base {
 	}
 
 	/**
-	 * is_file() consapevole di open_basedir.
+	 * open_basedir-aware is_file().
 	 *
-	 * Sonda /usr/bin e simili senza generare warning quando open_basedir
-	 * esclude quei percorsi.
+	 * Probes /usr/bin and friends without emitting warnings on hosts where
+	 * open_basedir excludes those paths.
 	 *
-	 * @param string $path Percorso assoluto.
+	 * @param string $path Absolute path.
 	 * @return bool
 	 */
 	public static function system_file_exists( $path ) {
@@ -122,10 +122,10 @@ class Base {
 	}
 
 	/**
-	 * Tipo MIME dedotto dai magic bytes, mai dall'estensione.
+	 * MIME type read from the magic bytes, never from the extension.
 	 *
-	 * @param string $path Percorso del file.
-	 * @return string Tipo MIME oppure stringa vuota.
+	 * @param string $path File path.
+	 * @return string MIME type, or an empty string.
 	 */
 	public static function sniff_mime( $path ) {
 		if ( ! @is_file( $path ) ) {
@@ -165,7 +165,7 @@ class Base {
 				return 'image/heic';
 			}
 			if ( 'mif1' === $brand || 'msf1' === $brand ) {
-				// Contenitore generico: distinguibile solo leggendo i brand compatibili.
+				// Generic container: only the compatible-brands list tells them apart.
 				return false !== strpos( substr( $head, 16, 16 ), 'avif' ) ? 'image/avif' : 'image/heif';
 			}
 		}
@@ -174,9 +174,9 @@ class Base {
 	}
 
 	/**
-	 * Rileva una GIF animata (piu' di un blocco immagine).
+	 * Detects an animated GIF (more than one image block).
 	 *
-	 * @param string $path Percorso del file.
+	 * @param string $path File path.
 	 * @return bool
 	 */
 	public static function is_animated_gif( $path ) {
@@ -199,9 +199,9 @@ class Base {
 	}
 
 	/**
-	 * Rileva un PNG animato (chunk acTL prima del primo IDAT).
+	 * Detects an animated PNG (acTL chunk before the first IDAT).
 	 *
-	 * @param string $path Percorso del file.
+	 * @param string $path File path.
 	 * @return bool
 	 */
 	public static function is_animated_png( $path ) {
@@ -220,12 +220,12 @@ class Base {
 	}
 
 	/**
-	 * Comprime un percorso assoluto in forma portabile.
+	 * Collapses an absolute path into a portable form.
 	 *
-	 * Un trasloco del sito o un cambio di UPLOADS non deve orfanare le righe
-	 * della tabella di tracciamento.
+	 * Moving the site or changing UPLOADS must not orphan every row in the
+	 * tracking table.
 	 *
-	 * @param string $path Percorso assoluto.
+	 * @param string $path Absolute path.
 	 * @return string
 	 */
 	public static function relativize( $path ) {
@@ -250,9 +250,9 @@ class Base {
 	}
 
 	/**
-	 * Inverso di relativize().
+	 * Inverse of relativize().
 	 *
-	 * @param string $path Percorso memorizzato.
+	 * @param string $path Stored path.
 	 * @return string
 	 */
 	public static function expand( $path ) {
@@ -272,7 +272,7 @@ class Base {
 	}
 
 	/**
-	 * Cartella base degli upload, senza sottocartella anno/mese.
+	 * Uploads base directory, without the year/month subfolder.
 	 *
 	 * @return string
 	 */
@@ -282,7 +282,7 @@ class Base {
 	}
 
 	/**
-	 * URL base degli upload.
+	 * Uploads base URL.
 	 *
 	 * @return string
 	 */
@@ -292,10 +292,10 @@ class Base {
 	}
 
 	/**
-	 * Cartella di lavoro del plugin dentro gli upload.
+	 * Plugin working directory, inside uploads.
 	 *
-	 * Volutamente dentro gli upload e non in /tmp: su host con open_basedir
-	 * /tmp e' spesso irraggiungibile.
+	 * Deliberately inside uploads rather than /tmp: on hosts with open_basedir
+	 * set, /tmp is frequently unreachable.
 	 *
 	 * @return string
 	 */
@@ -310,9 +310,9 @@ class Base {
 	}
 
 	/**
-	 * Limite di memoria effettivo in byte.
+	 * Effective memory limit in bytes.
 	 *
-	 * @return int Zero se illimitato.
+	 * @return int Zero when unlimited.
 	 */
 	public static function memory_limit_bytes() {
 		$raw = trim( (string) ini_get( 'memory_limit' ) );
@@ -325,9 +325,9 @@ class Base {
 	}
 
 	/**
-	 * Copia i permessi della cartella contenitore sul file appena creato.
+	 * Copies the parent directory's permissions onto a newly created file.
 	 *
-	 * @param string $file Percorso del file.
+	 * @param string $file File path.
 	 * @return void
 	 */
 	public static function inherit_permissions( $file ) {
@@ -337,7 +337,7 @@ class Base {
 			return;
 		}
 
-		// Stessi permessi della cartella, senza i bit di esecuzione.
+		// Same permissions as the directory, minus the executable bits.
 		@chmod( $file, $stat['mode'] & 0000666 );
 	}
 }

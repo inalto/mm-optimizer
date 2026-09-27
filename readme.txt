@@ -1,6 +1,6 @@
 === MM Optimizer ===
 Contributors: inalto
-Tags: immagini, ottimizzazione, webp, avif, prestazioni
+Tags: images, optimization, webp, avif, performance
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,61 +8,61 @@ Stable tag: 1.0.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Rileva le librerie grafiche del server, verifica quali funzionano davvero e propone le impostazioni ottimali. Genera WebP e AVIF senza mai toccare gli originali.
+Detects your server's graphics libraries, verifies which ones actually work, and proposes the optimal settings. Generates WebP and AVIF without ever touching the originals.
 
 == Description ==
 
-MM Optimizer parte da una domanda che quasi nessun plugin di ottimizzazione pone: **che cosa sa fare davvero questo server?**
+MM Optimizer starts from a question almost no image plugin asks: **what can this server actually do?**
 
-Invece di presentare una distesa di interruttori da indovinare, all'attivazione esegue un rilevamento completo e mostra una matrice di capacita' con l'esito di prove reali. Per ogni libreria e per ogni formato codifica un campione noto, ne controlla i byte magici, verifica che il risultato sia rileggibile e misura quanto occupa. Il supporto soltanto dichiarato non viene mai dato per buono: e' proprio quello il caso che produce file corrotti in silenzio.
+Instead of presenting a wall of switches to guess at, it runs a full detection pass on activation and shows a capability matrix built from real tests. For every library and every format it encodes a known sample, checks the magic bytes, verifies the result can be read back, and measures how big it came out. Declared support is never taken on trust: that is precisely the case that produces corrupted files in silence.
 
-Da quel rilevamento nasce una configurazione consigliata, con la motivazione accanto a ogni scelta.
+The recommended configuration follows from that detection, with the reason shown next to every choice.
 
-= Cosa fa =
+= What it does =
 
-* **Rileva** GD, Imagick, Gmagick e i binari di sistema (cwebp, avifenc, jpegoptim, jpegtran, optipng, pngquant, gifsicle).
-* **Verifica** ogni codificatore con una prova funzionale, non con un controllo di versione.
-* **Classifica** i motori disponibili misurandoli sulla stessa fotografia di prova e sceglie quello che produce il file piu' piccolo. Nessuna tabella di preferenze scritta a mano: su un server dove cwebp batte GD, vince cwebp.
-* **Propone** formati, qualita', livello e modalita' di consegna, spiegando ogni decisione.
-* **Genera** derivate WebP e AVIF con quattro livelli di ottimizzazione.
-* **Consegna** le immagini in modo responsive con `<picture>` e un `srcset` per formato, oppure tramite negoziazione `.htaccess`.
-* **Si ritira** quando un altro ottimizzatore e' attivo, invece di sovrapporsi.
+* **Detects** GD, Imagick, Gmagick and the system binaries (cwebp, avifenc, jpegoptim, jpegtran, optipng, pngquant, gifsicle).
+* **Verifies** every encoder with a functional test, not a version check.
+* **Ranks** the available engines by measuring them against the same test photograph and picks the one that produces the smallest file. No hand-written preference table: on a server where cwebp beats GD, cwebp wins.
+* **Proposes** formats, quality, level and delivery mode, explaining each decision.
+* **Generates** WebP and AVIF derivatives across four optimization levels.
+* **Delivers** images responsively with `<picture>` and one `srcset` per format, or through `.htaccess` content negotiation.
+* **Stands down** when another optimizer is active, instead of fighting it.
 
-= Cosa non fa, per scelta =
+= What it deliberately does not do =
 
-* **Non modifica mai i file originali.** Genera derivate affiancate e interviene solo sulle miniature prodotte da WordPress, al momento in cui vengono create.
-* Non include binari precompilati: usa quelli del sistema, se ci sono.
-* Non scarica eseguibili da internet a runtime.
-* Non include lazy loading, CDN, telemetria o integrazioni con gallerie di terze parti.
+* **It never modifies your original files.** It writes sibling derivatives and touches only the thumbnails WordPress generates, at the moment they are created.
+* No bundled binaries: it uses the system's, if any are present.
+* No downloading executables at runtime.
+* No lazy loading, CDN, telemetry or third-party gallery integrations.
 
-= Livelli di ottimizzazione =
+= Optimization levels =
 
-I numeri derivano da misure reali, non da stime.
+The numbers come from real measurements, not estimates.
 
-* **Conservativo** — WebP q90, AVIF q68. Qualita' massima.
-* **Bilanciato** — WebP q82, AVIF q58. Circa il 45% in meno con WebP, il 66% con AVIF.
-* **Aggressivo** — WebP q75, AVIF q50. Fino al 78% in meno.
-* **Personalizzato** — valori a piacere.
+* **Conservative** — WebP q90, AVIF q68. Highest quality.
+* **Balanced** — WebP q82, AVIF q58. Around 45% smaller with WebP, 66% with AVIF.
+* **Aggressive** — WebP q75, AVIF q50. Up to 78% smaller.
+* **Custom** — your own values.
 
 == Frequently Asked Questions ==
 
-= Modifica le mie immagini originali? =
+= Does it modify my original images? =
 
-No, mai. Gli originali restano identici byte per byte. Il plugin crea file affiancati (`foto.jpg.webp`, `foto.jpg.avif`) e imposta la qualita' con cui WordPress genera le miniature, cosi' che nascano gia' ottimizzate senza una seconda ricompressione.
+Never. Originals stay byte-for-byte identical. The plugin creates sibling files (`photo.jpg.webp`, `photo.jpg.avif`) and sets the quality WordPress uses when generating thumbnails, so they are born optimized without a second round of recompression.
 
-= Posso usarlo insieme a un altro ottimizzatore? =
+= Can I run it alongside another optimizer? =
 
-La conversione funziona comunque, ma la consegna resta spenta finche' l'altro plugin e' attivo: due plugin che riscrivono gli stessi URL si ostacolano a vicenda. L'avviso in bacheca indica quale plugin e' in conflitto.
+Conversion works regardless, but delivery stays off while the other plugin is active: two plugins rewriting the same URLs get in each other's way. The admin notice names the conflicting plugin.
 
-= Perche' alcuni formati risultano "dichiarati" e non "verificati"? =
+= Why are some formats shown as "claimed" rather than "verified"? =
 
-Perche' la libreria sostiene di supportarli ma la prova di codifica e' fallita. Quei formati restano disattivati di proposito: e' la situazione che genera file corrotti senza alcun errore visibile.
+Because the library says it supports them but the encoding test failed. Those formats stay disabled on purpose: this is the situation that generates corrupted files with no visible error.
 
-= AVIF viene generato ma non consegnato. Perche'? =
+= AVIF is generated but not delivered. Why? =
 
-Molti server hanno un elenco di tipi MIME anteriore ad AVIF e consegnano i file `.avif` come `application/octet-stream`. In modalita' `<picture>` il browser sceglie la sorgente AVIF fidandosi dell'attributo `type`, poi non riesce a decodificarla e su Firefox e Safari non ripiega sull'immagine originale. Il plugin lo verifica con una richiesta reale e aggiunge una riga `AddType` al `.htaccess`; se non puo' scriverla, preferisce non consegnare AVIF.
+Many servers have a MIME type list that predates AVIF and hand back `.avif` files as `application/octet-stream`. In `<picture>` mode the browser picks the AVIF source on the strength of the `type` attribute, then fails to decode it, and on Firefox and Safari does not fall back to the original image. The plugin checks this with a real request and adds an `AddType` line to `.htaccess`; if it cannot write one, it prefers not to deliver AVIF at all.
 
 == Changelog ==
 
 = 1.0.0 =
-* Prima versione.
+* First release.

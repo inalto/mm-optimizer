@@ -1,6 +1,6 @@
 <?php
 /**
- * Rilevamento dei plugin concorrenti e logica di ritiro.
+ * Competing-plugin detection and the stand-down rules.
  *
  * @package MM_Optimizer
  */
@@ -12,14 +12,14 @@ defined( 'ABSPATH' ) || exit;
 class Conflicts {
 
 	/**
-	 * Risultato della scansione, cache di richiesta.
+	 * Scan result, cached per request.
 	 *
 	 * @var array|null
 	 */
 	protected static $cache = null;
 
 	/**
-	 * Plugin concorrenti noti: basename => etichetta.
+	 * Known competing plugins: basename => label.
 	 *
 	 * @return array
 	 */
@@ -39,7 +39,7 @@ class Conflicts {
 	}
 
 	/**
-	 * Simboli che tradiscono un plugin concorrente rinominato.
+	 * Symbols that give away a renamed competitor.
 	 *
 	 * @return array
 	 */
@@ -55,7 +55,7 @@ class Conflicts {
 	}
 
 	/**
-	 * Marcatori lasciati nei file .htaccess.
+	 * Markers left behind in .htaccess files.
 	 *
 	 * @return array
 	 */
@@ -69,12 +69,12 @@ class Conflicts {
 	}
 
 	/**
-	 * Esegue la scansione completa.
+	 * Runs the full scan.
 	 *
 	 * @return array {
-	 *     @type array $plugins  Etichette dei plugin attivi.
-	 *     @type array $symbols  Etichette rilevate a runtime.
-	 *     @type array $htaccess Percorso => etichetta.
+	 *     @type array $plugins  Labels of active plugins.
+	 *     @type array $symbols  Labels detected at runtime.
+	 *     @type array $htaccess Path => label.
 	 * }
 	 */
 	public static function scan() {
@@ -88,7 +88,7 @@ class Conflicts {
 			'htaccess' => array(),
 		);
 
-		// Segnale 1: plugin attivi. Autorevole.
+		// Signal 1: active plugins. Authoritative.
 		if ( ! function_exists( 'is_plugin_active' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
@@ -99,7 +99,7 @@ class Conflicts {
 			}
 		}
 
-		// Segnale 2: simboli a runtime, per cartelle rinominate o copie mu-plugin.
+		// Signal 2: runtime symbols, for renamed folders or mu-plugin copies.
 		foreach ( self::symbols() as $label => $probe ) {
 			$found = false;
 			if ( isset( $probe['constant'] ) && defined( $probe['constant'] ) ) {
@@ -113,7 +113,7 @@ class Conflicts {
 			}
 		}
 
-		// Segnale 3: regole lasciate nei .htaccess, anche da plugin disattivati.
+		// Signal 3: rules left in .htaccess, including by deactivated plugins.
 		$result['htaccess'] = self::scan_htaccess();
 
 		self::$cache = $result;
@@ -122,9 +122,9 @@ class Conflicts {
 	}
 
 	/**
-	 * Cerca marcatori di terze parti nei file .htaccess rilevanti.
+	 * Looks for third-party markers in the relevant .htaccess files.
 	 *
-	 * @return array Percorso => etichetta.
+	 * @return array Path => label.
 	 */
 	protected static function scan_htaccess() {
 		$cached = get_transient( 'mm_opt_htaccess_scan' );
@@ -163,7 +163,7 @@ class Conflicts {
 	}
 
 	/**
-	 * Etichette di tutti i concorrenti realmente attivi.
+	 * Labels of every competitor that is genuinely active.
 	 *
 	 * @return array
 	 */
@@ -174,7 +174,7 @@ class Conflicts {
 	}
 
 	/**
-	 * Vero se nessun concorrente e' attivo.
+	 * True when no competitor is active.
 	 *
 	 * @return bool
 	 */
@@ -183,7 +183,7 @@ class Conflicts {
 	}
 
 	/**
-	 * Vero se nessuno ha lasciato regole di riscrittura nei .htaccess.
+	 * True when nobody has left rewrite rules in an .htaccess file.
 	 *
 	 * @return bool
 	 */
@@ -194,12 +194,12 @@ class Conflicts {
 	}
 
 	/**
-	 * Decide se un sottosistema deve ritirarsi.
+	 * Decides whether a subsystem must stand down.
 	 *
-	 * La conversione resta sempre attiva: il ritiro riguarda solo la consegna
-	 * e, nel caso specifico di EWWW, l'ottimizzazione in place delle miniature.
+	 * Conversion always stays on: standing down concerns delivery and, in the
+	 * specific case of EWWW, in-place thumbnail optimization.
 	 *
-	 * @param string $subsystem 'picture', 'htaccess' oppure 'thumbnails'.
+	 * @param string $subsystem 'picture', 'htaccess' or 'thumbnails'.
 	 * @return bool
 	 */
 	public static function blocks( $subsystem ) {
@@ -208,8 +208,8 @@ class Conflicts {
 		} else {
 			switch ( $subsystem ) {
 				case 'picture':
-					// Le regole rimaste in un .htaccess non danneggiano l'output
-					// <picture>: blocca solo un plugin realmente attivo.
+					// Rules left in an .htaccess do not harm <picture> output:
+					// only a genuinely active plugin blocks it.
 					$blocked = ! self::clear_field();
 					break;
 
@@ -218,8 +218,8 @@ class Conflicts {
 					break;
 
 				case 'thumbnails':
-					// Due ottimizzatori che riscrivono lo stesso file sono un
-					// rischio concreto di corruzione.
+					// Two optimizers rewriting the same file is a real
+					// corruption risk.
 					$blocked = in_array( 'EWWW Image Optimizer', self::active(), true );
 					break;
 
@@ -229,16 +229,16 @@ class Conflicts {
 		}
 
 		/**
-		 * Filtra la decisione di ritiro per un sottosistema.
+		 * Filters the stand-down decision for a subsystem.
 		 *
-		 * @param bool   $blocked   Vero se il sottosistema deve restare spento.
-		 * @param string $subsystem Identificativo del sottosistema.
+		 * @param bool   $blocked   True when the subsystem must stay off.
+		 * @param string $subsystem Subsystem identifier.
 		 */
 		return (bool) apply_filters( 'mm_optimizer_blocks', $blocked, $subsystem );
 	}
 
 	/**
-	 * Svuota le cache di rilevamento.
+	 * Clears the detection caches.
 	 *
 	 * @return void
 	 */

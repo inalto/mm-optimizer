@@ -1,9 +1,9 @@
 <?php
 /**
- * API pubblica del plugin.
+ * Public API.
  *
- * Funzioni deliberatamente nello spazio dei nomi globale, cosi' che temi e
- * altri plugin possano usarle senza conoscere la struttura interna.
+ * These functions live in the global namespace on purpose, so themes and
+ * other plugins can use them without knowing anything about the internals.
  *
  * @package MM_Optimizer
  */
@@ -18,10 +18,10 @@ namespace {
 	defined( 'ABSPATH' ) || exit;
 
 	/**
-	 * Legge un'impostazione con notazione puntata.
+	 * Reads a setting using dot notation.
 	 *
-	 * @param string $path    Percorso, ad esempio "avif.enabled".
-	 * @param mixed  $default Valore di ripiego.
+	 * @param string $path    Path, for example "avif.enabled".
+	 * @param mixed  $default Fallback value.
 	 * @return mixed
 	 */
 	function mm_optimizer_get_option( $path, $default = null ) {
@@ -29,9 +29,9 @@ namespace {
 	}
 
 	/**
-	 * Capacita' rilevate dell'host.
+	 * Detected host capabilities.
 	 *
-	 * @param bool $force Forza un nuovo rilevamento.
+	 * @param bool $force Force a fresh detection run.
 	 * @return array
 	 */
 	function mm_optimizer_capabilities( $force = false ) {
@@ -39,7 +39,7 @@ namespace {
 	}
 
 	/**
-	 * Configurazione consigliata per questo host.
+	 * Recommended configuration for this host.
 	 *
 	 * @return array
 	 */
@@ -48,9 +48,9 @@ namespace {
 	}
 
 	/**
-	 * Vero se un formato moderno e' realmente producibile qui.
+	 * Whether a modern format can actually be produced here.
 	 *
-	 * @param string $format 'webp' oppure 'avif'.
+	 * @param string $format 'webp' or 'avif'.
 	 * @return bool
 	 */
 	function mm_optimizer_supports( $format ) {

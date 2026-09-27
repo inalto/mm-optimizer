@@ -1,124 +1,137 @@
 # MM Optimizer
 
-Plugin WordPress di ottimizzazione immagini. Rileva le librerie grafiche
-disponibili, verifica quali funzionano davvero e propone le impostazioni
-ottimali per quel server specifico.
+WordPress image optimization plugin. It detects the graphics libraries
+available on the host, verifies which ones actually work, and proposes the
+optimal settings for that specific server.
 
-## Perche' esiste
+## Why it exists
 
-I plugin di ottimizzazione esistenti hanno due difetti ricorrenti.
+Existing optimization plugins share two recurring flaws.
 
-Il primo e' che **si fidano del supporto dichiarato**. `Imagick::queryFormats()`
-elenca `WEBP` anche quando il delegato e' rotto; un `cwebp` nel `PATH` puo'
-essere uno script segnaposto. Il risultato sono file corrotti scritti in
-silenzio, che ci si accorge di avere settimane dopo.
+The first is that they **trust declared support**. `Imagick::queryFormats()`
+lists `WEBP` even when the delegate is broken; a `cwebp` on the `PATH` can be a
+placeholder script. The result is corrupted files written in silence, noticed
+weeks later.
 
-Il secondo e' che **scaricano la decisione sull'utente**: decine di interruttori
-e cursori senza alcuna indicazione su quali abbiano senso su quell'host.
+The second is that they **push the decision onto the user**: dozens of switches
+and sliders with no indication of which ones make sense on that host.
 
-MM Optimizer risponde a entrambi con un motore di rilevamento che prova davvero
-a codificare, e con un motore di raccomandazione che traduce l'esito in una
-configurazione motivata.
+MM Optimizer answers both with a detection engine that genuinely tries to
+encode, and a recommendation engine that turns the outcome into a justified
+configuration.
 
-## Architettura
+## Architecture
 
 ```
-mm-optimizer.php          bootstrap: costanti, elenco require, agganci di attivazione
+mm-optimizer.php          bootstrap: constants, require list, activation hooks
 includes/
-  class-base.php          function_exists() consapevole di disable_functions e suhosin,
-                          is_file() consapevole di open_basedir, MIME dai magic bytes,
-                          percorsi relativizzati per sopravvivere ai traslochi
-  class-options.php       opzione unica serializzata, lettura a notazione puntata,
-                          sanificazione a whitelist rigorosa
-  class-presets.php       i quattro livelli di ottimizzazione
-  class-log.php           registro diagnostico a dimensione limitata
-  class-conflicts.php     tre segnali di rilevamento, matrice di ritiro
-  class-probe.php         la prova funzionale ("blind test")
-  class-capabilities.php  il motore di rilevamento
-  class-recommender.php   dalle capacita' alle impostazioni, con le motivazioni
-  class-plugin.php        singleton, agganci, schema del database
-  api.php                 API pubblica nello spazio dei nomi globale
-admin/
-  class-admin.php         menu, risorse, avvisi
-  class-settings.php      pagina a schede, resa a mano
-  class-report.php        matrice delle capacita' e configurazione consigliata
-  class-ajax.php          rilevamento e applicazione della configurazione
-assets/probe/             campioni di prova deterministici
+  class-base.php          disable_functions- and suhosin-aware function_exists(),
+                          open_basedir-aware is_file(), MIME from magic bytes,
+                          relativized paths that survive a site move
+  class-options.php       single serialized option, dot-notation reads,
+                          strict-whitelist sanitization
+  class-presets.php       the four optimization levels
+  class-log.php           bounded diagnostic log
+  class-conflicts.php     three detection signals, stand-down matrix
+  class-probe.php         the functional ("blind") test
+  class-capabilities.php  the detection engine
+  class-recommender.php   from capabilities to settings, with the reasons
+  class-paths.php         the only place that knows the naming scheme
+  class-encoder.php       GD / Imagick / CLI encoding
+  class-records.php       tracking table
+  class-thumbnails.php    lossless optimization, thumbnails only
+  class-converter.php     derivative production and its safety rules
+  class-lock.php          dual transient + lockfile lock
+  class-queue.php         work queue and background worker
+  class-scanner.php       builds a bulk job
+  class-migrator.php      import from Converter for Media
+  class-attachment-hooks.php  attachment lifecycle
+  class-htaccess.php      marker block management
+  delivery/               srcset recorder, <picture> rewriting, mode selection
+  api.php                 public API in the global namespace
+admin/                    menu, tabbed settings page, diagnostics, bulk, AJAX
+assets/probe/             deterministic test samples
 ```
 
-## Il rilevamento in cinque fasi
+## Detection, in five stages
 
-1. **Ambiente** — hosting gestito (costanti note), disponibilita' di `exec`,
-   `open_basedir`, memoria, tempo massimo. Su un hosting gestito la ricerca dei
-   binari viene saltata del tutto: non sarebbero eseguibili comunque.
-2. **Supporto dichiarato** — `gd_info()`, `Imagick::queryFormats()`,
-   `Gmagick::queryFormats()`. Registrato come `claimed`, mai come `verified`.
-3. **Prova funzionale** — per ogni coppia (libreria, formato) codifica
-   `assets/probe/probe.png`, poi verifica: il file esiste, non e' vuoto, i magic
-   bytes corrispondono, la dimensione sta sotto un tetto noto, e il risultato e'
-   rileggibile. Solo allora `verified = true`.
-4. **Binari di sistema** — cercati in cartelle esplicite, mai risolti da una
-   shell, ogni `is_file()` filtrato da `open_basedir`. Gli ottimizzatori senza
-   perdita sono provati su un JPEG volutamente gonfio di metadati: un binario
-   che non fa nulla non riesce a ridurlo.
-5. **Classifica** — i codificatori verificati vengono misurati su una fotografia
-   di prova da 512x384 e ordinati per byte prodotti, con i millisecondi come
-   spareggio.
+1. **Environment** — managed host (known constants), `exec` availability,
+   `open_basedir`, memory, time limit. On a managed host, binary discovery is
+   skipped entirely: they would not be executable anyway.
+2. **Declared support** — `gd_info()`, `Imagick::queryFormats()`,
+   `Gmagick::queryFormats()`. Recorded as `claimed`, never as `verified`.
+3. **Functional test** — for every (library, format) pair it encodes
+   `assets/probe/probe.png`, then checks: the file exists, is not empty, the
+   magic bytes match, the size is under a known ceiling, and the result can be
+   read back. Only then is `verified` set.
+4. **System binaries** — searched in explicit directories, never resolved by a
+   shell, every `is_file()` filtered through `open_basedir`. Lossless
+   optimizers are tested against a JPEG deliberately padded with metadata: a
+   binary that does nothing cannot shrink it.
+5. **Ranking** — the verified encoders are measured against a 512×384 test
+   photograph and ordered by bytes produced, with milliseconds as the
+   tie-breaker.
 
-### Perche' due campioni diversi
+### Why two different samples
 
-"Funziona?" e "chi comprime meglio?" sono domande diverse e richiedono campioni
-diversi. Sul campione da 64x64 usato per la verifica, `cwebp -m 6` risulta due
-byte **piu' grande** di `-m 4`; sulla fotografia di prova e' il 7% piu' piccolo,
-coerentemente con quello che fa sulle immagini reali. Classificare sul campione
-sbagliato porta a scegliere il motore sbagliato.
+"Does it work?" and "which compresses best?" are different questions and need
+different samples. On the 64×64 sample used for verification, `cwebp -m 6` comes
+out two bytes **larger** than `-m 4`; on the test photograph it is 7% smaller,
+consistent with what it does on real images. Ranking on the wrong sample picks
+the wrong engine.
 
-## Invalidazione della cache
+## Cache invalidation
 
-Le capacita' vivono nell'opzione `mm_optimizer_capabilities` con
-`autoload = no`, non in un transient: con un object cache Redis un flush
-costringerebbe a rifare il rilevamento, con le sue chiamate `proc_open`, su una
-richiesta qualsiasi del front end.
+Capabilities live in the `mm_optimizer_capabilities` option with
+`autoload = no`, not in a transient: with a Redis object cache, a flush would
+force a fresh detection run — `proc_open` calls included — on some random
+front-end request.
 
-L'invalidazione e' per **impronta**, non per scadenza:
+Invalidation is by **fingerprint**, not by expiry:
 
 ```
-sha1( PHP_VERSION | versione GD | imagetypes() | versione Imagick | gmagick
-      | disable_functions | open_basedir | PHP_OS | versione del plugin | schema )
+sha1( PHP_VERSION | GD version | imagetypes() | Imagick version | gmagick
+      | disable_functions | open_basedir | PHP_OS | plugin version | schema )
 ```
 
-Cosi' un aggiornamento di PHP o una nuova estensione vengono colti nell'istante
-in cui avvengono, senza indovinare un TTL. Fa eccezione la ricerca dei binari,
-riesaminata comunque una volta a settimana: un pacchetto puo' comparire senza
-che nulla dell'impronta cambi.
+A PHP upgrade or a newly enabled extension is caught the moment it happens, with
+no TTL to guess. The exception is binary discovery, re-examined weekly anyway: a
+package can appear without anything in the fingerprint changing.
 
-## Ritiro in presenza di concorrenti
+## Standing down for competitors
 
-Tre segnali, dal piu' economico: basename dei plugin attivi, simboli a runtime
-(per cartelle rinominate), marcatori nei file `.htaccess` (per plugin
-disattivati che hanno lasciato regole attive).
+Three signals, cheapest first: active plugin basenames, runtime symbols (for
+renamed folders), and markers in `.htaccess` files (for deactivated plugins that
+left live rules behind).
 
-| Sottosistema | Con un conflitto attivo |
+| Subsystem | With a conflict active |
 |---|---|
-| Consegna `<picture>` e `.htaccess` | spenta, nessun aggancio registrato |
-| Conversione, coda, conversione in blocco | **attiva** |
-| Ottimizzazione delle miniature | spenta solo se EWWW e' attivo |
-| Diagnostica e raccomandazioni | attive |
+| `<picture>` and `.htaccess` delivery | off, no hooks registered |
+| Conversion, queue, bulk conversion | **on** |
+| Thumbnail optimization | off only when EWWW is active |
+| Diagnostics and recommendations | on |
 
-La costante `MM_OPTIMIZER_FORCE_DELIVERY` in `wp-config.php` scavalca il ritiro
-per le prove, segnalandolo con un avviso.
+The `MM_OPTIMIZER_FORCE_DELIVERY` constant in `wp-config.php` overrides the
+stand-down for testing, and says so with an admin notice.
 
-## Agganci per gli sviluppatori
+## Developer hooks
 
-| Filtro | Scopo |
+| Filter | Purpose |
 |---|---|
-| `mm_optimizer_quality` | qualita' scelta per una conversione |
-| `mm_optimizer_blocks` | decisione di ritiro di un sottosistema |
-| `mm_optimizer_binary_paths` | cartelle in cui cercare i binari |
+| `mm_optimizer_quality` | quality chosen for a conversion |
+| `mm_optimizer_blocks` | stand-down decision for a subsystem |
+| `mm_optimizer_encoder_for` | engine used for an output format |
+| `mm_optimizer_binary_paths` | directories searched for binaries |
+| `mm_optimizer_webpc_dir` | Converter for Media output directory |
 
-Funzioni pubbliche: `mm_optimizer_get_option()`, `mm_optimizer_capabilities()`,
+Public functions: `mm_optimizer_get_option()`, `mm_optimizer_capabilities()`,
 `mm_optimizer_recommendation()`, `mm_optimizer_supports()`.
 
-## Licenza
+## Translations
+
+Source strings are English. An Italian translation ships in
+`languages/mm-optimizer-it_IT.po`.
+
+## License
 
 GPL-3.0-or-later.

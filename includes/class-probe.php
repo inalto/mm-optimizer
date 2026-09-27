@@ -1,11 +1,11 @@
 <?php
 /**
- * Prova funzionale ("blind test") dei codificatori.
+ * Functional ("blind") test of the encoders.
  *
- * Il supporto dichiarato mente: Imagick elenca WEBP in queryFormats() anche
- * quando il delegato e' rotto, e un cwebp nel PATH puo' essere uno script
- * segnaposto. L'unica verifica attendibile e' codificare davvero un campione
- * noto e controllare il risultato byte per byte.
+ * Declared support lies: Imagick lists WEBP in queryFormats() even when the
+ * delegate is broken, and a cwebp on the PATH can be a placeholder script.
+ * The only trustworthy check is to actually encode a known sample and
+ * inspect the result byte by byte.
  *
  * @package MM_Optimizer
  */
@@ -17,12 +17,12 @@ defined( 'ABSPATH' ) || exit;
 class Probe {
 
 	/**
-	 * Dimensione massima accettabile per il campione codificato.
+	 * Largest acceptable size for the encoded sample.
 	 *
-	 * Il campione e' 64x64 RGBA. Misurato con GD 2.3.3: WebP q82 = 1.018 B,
-	 * AVIF q58 = 1.081 B, PNG z9 = 840 B, JPEG q82 = 1.930 B. I tetti sono
-	 * circa tre volte la misura: un codificatore che restituisce i pixel
-	 * grezzi dentro un contenitore li supera sempre.
+	 * The sample is 64x64 RGBA. Measured with GD 2.3.3: WebP q82 = 1,018 B,
+	 * AVIF q58 = 1,081 B, PNG z9 = 840 B, JPEG q82 = 1,930 B. The ceilings are
+	 * roughly three times the measurement: an encoder that hands back raw
+	 * pixels inside a container always exceeds them.
 	 *
 	 * @var array
 	 */
@@ -35,7 +35,7 @@ class Probe {
 	);
 
 	/**
-	 * Percorso del campione RGBA.
+	 * Path to the RGBA sample.
 	 *
 	 * @return string
 	 */
@@ -44,12 +44,11 @@ class Probe {
 	}
 
 	/**
-	 * Percorso del campione fotografico usato per la classifica.
+	 * Path to the photographic sample used for ranking.
 	 *
-	 * Il campione 64x64 serve a verificare che un codificatore funzioni, non a
-	 * stabilire quale sia il migliore: su un'immagine cosi' piccola cwebp -m 6
-	 * risulta perfino due byte piu' grande di -m 4, mentre su una fotografia
-	 * reale e' circa il 5% piu' piccolo. La classifica va fatta su questo.
+	 * The 64x64 sample proves that an encoder works, not which one is best: on
+	 * an image that small, cwebp -m 6 comes out two bytes larger than -m 4,
+	 * while on a real photograph it is about 5% smaller. Ranking belongs here.
 	 *
 	 * @return string
 	 */
@@ -58,7 +57,7 @@ class Probe {
 	}
 
 	/**
-	 * Percorso del campione JPEG con metadati superflui.
+	 * Path to the JPEG sample padded with junk metadata.
 	 *
 	 * @return string
 	 */
@@ -67,17 +66,17 @@ class Probe {
 	}
 
 	/**
-	 * Esegue una prova completa su un codificatore.
+	 * Runs a full test against an encoder.
 	 *
-	 * @param callable $encoder     Riceve (string $source, string $dest) e
-	 *                              restituisce bool.
-	 * @param string   $target_mime Tipo MIME atteso in uscita.
-	 * @param string   $source      Campione da usare; vuoto per quello RGBA.
+	 * @param callable $encoder     Receives (string $source, string $dest) and
+	 *                              returns bool.
+	 * @param string   $target_mime Expected output MIME type.
+	 * @param string   $source      Sample to use; empty for the RGBA one.
 	 * @return array {
-	 *     @type bool   $verified Esito complessivo.
-	 *     @type int    $bytes    Dimensione prodotta.
-	 *     @type float  $ms       Millisecondi impiegati.
-	 *     @type string $reason   Codice di fallimento, se presente.
+	 *     @type bool   $verified Overall result.
+	 *     @type int    $bytes    Size produced.
+	 *     @type float  $ms       Milliseconds taken.
+	 *     @type string $reason   Failure code, when present.
 	 * }
 	 */
 	public static function run( callable $encoder, $target_mime, $source = '' ) {
@@ -132,8 +131,8 @@ class Probe {
 			return $result;
 		}
 
-		// I magic bytes, mai l'estensione: un encoder rotto sa comunque
-		// scrivere un file con il nome giusto.
+		// Magic bytes, never the extension: a broken encoder can still write a
+		// file with the right name.
 		if ( Base::sniff_mime( $dest ) !== $target_mime ) {
 			$result['reason'] = 'wrong_format';
 			self::cleanup( $dest );
@@ -147,8 +146,8 @@ class Probe {
 			return $result;
 		}
 
-		// Riletura: verifica anche il lato decodifica, che serve al percorso
-		// "miniatura generata dall'originale".
+		// Read back: this also proves the decode side, which the
+		// "thumbnail from the original" path depends on.
 		if ( ! self::decodes( $dest, $target_mime ) ) {
 			$result['reason'] = 'decode_failed';
 			self::cleanup( $dest );
@@ -163,16 +162,16 @@ class Probe {
 	}
 
 	/**
-	 * Misura un codificatore su un campione fotografico, per la classifica.
+	 * Measures an encoder against a photographic sample, for ranking.
 	 *
-	 * Nessuna soglia e nessuna verifica di formato: qui interessano solo byte
-	 * e millisecondi, e la correttezza e' gia' stata accertata da run().
+	 * No thresholds and no format check: only bytes and milliseconds matter
+	 * here, and correctness has already been established by run().
 	 *
-	 * @param callable $encoder     Riceve (string $source, string $dest).
-	 * @param string   $target_mime Tipo MIME di uscita.
+	 * @param callable $encoder     Receives (string $source, string $dest).
+	 * @param string   $target_mime Output MIME type.
 	 * @return array {
-	 *     @type int   $bytes Dimensione prodotta; zero in caso di fallimento.
-	 *     @type float $ms    Millisecondi impiegati.
+	 *     @type int   $bytes Size produced; zero on failure.
+	 *     @type float $ms    Milliseconds taken.
 	 * }
 	 */
 	public static function bench( callable $encoder, $target_mime ) {
@@ -210,10 +209,10 @@ class Probe {
 	}
 
 	/**
-	 * Verifica che il file prodotto sia rileggibile.
+	 * Verifies that the produced file can be read back.
 	 *
-	 * @param string $path        Percorso.
-	 * @param string $target_mime Tipo MIME.
+	 * @param string $path        Path.
+	 * @param string $target_mime MIME type.
 	 * @return bool
 	 */
 	protected static function decodes( $path, $target_mime ) {
@@ -226,7 +225,7 @@ class Probe {
 		);
 
 		if ( ! isset( $map[ $target_mime ] ) || ! Base::function_exists( $map[ $target_mime ] ) ) {
-			// Senza il lettore corrispondente ci si ferma ai magic bytes.
+			// Without the matching reader, the magic bytes are as far as we go.
 			return true;
 		}
 
@@ -245,9 +244,9 @@ class Probe {
 	}
 
 	/**
-	 * Percorso temporaneo dentro gli upload.
+	 * Temporary path inside uploads.
 	 *
-	 * @param string $target_mime Tipo MIME.
+	 * @param string $target_mime MIME type.
 	 * @return string
 	 */
 	protected static function temp_path( $target_mime ) {
@@ -266,9 +265,9 @@ class Probe {
 	}
 
 	/**
-	 * Rimuove un file temporaneo.
+	 * Removes a temporary file.
 	 *
-	 * @param string $path Percorso.
+	 * @param string $path Path.
 	 * @return void
 	 */
 	protected static function cleanup( $path ) {

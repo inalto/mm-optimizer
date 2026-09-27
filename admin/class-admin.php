@@ -1,6 +1,6 @@
 <?php
 /**
- * Menu, risorse e avvisi di amministrazione.
+ * Admin menu, assets and notices.
  *
  * @package MM_Optimizer
  */
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 class Admin {
 
 	/**
-	 * Registra gli agganci.
+	 * Registers the hooks.
 	 *
 	 * @return void
 	 */
@@ -25,7 +25,7 @@ class Admin {
 	}
 
 	/**
-	 * Voce di menu.
+	 * Menu entry.
 	 *
 	 * @return void
 	 */
@@ -42,16 +42,16 @@ class Admin {
 	}
 
 	/**
-	 * Collegamento rapido dalla lista dei plugin.
+	 * Shortcut from the plugin list.
 	 *
-	 * @param array $links Collegamenti esistenti.
+	 * @param array $links Existing links.
 	 * @return array
 	 */
 	public static function action_links( $links ) {
 		$settings = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( admin_url( 'admin.php?page=mm-optimizer' ) ),
-			esc_html__( 'Impostazioni', 'mm-optimizer' )
+			esc_html__( 'Settings', 'mm-optimizer' )
 		);
 
 		array_unshift( $links, $settings );
@@ -60,9 +60,9 @@ class Admin {
 	}
 
 	/**
-	 * Fogli di stile e script della pagina.
+	 * Page stylesheet and script.
 	 *
-	 * @param string $hook Identificativo della schermata.
+	 * @param string $hook Screen identifier.
 	 * @return void
 	 */
 	public static function enqueue( $hook ) {
@@ -80,22 +80,22 @@ class Admin {
 				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'mm_optimizer_admin' ),
 				'i18n'     => array(
-					'detecting' => __( 'Rilevamento in corso...', 'mm-optimizer' ),
-					'applying'  => __( 'Applicazione in corso...', 'mm-optimizer' ),
-					'failed'    => __( 'Operazione non riuscita.', 'mm-optimizer' ),
-					'confirm'   => __( 'Sostituire le impostazioni attuali con quelle consigliate?', 'mm-optimizer' ),
-					'scanning'  => __( 'Analisi della libreria in corso...', 'mm-optimizer' ),
-					/* translators: 1: derivate create, 2: file saltati, 3: errori, 4: spazio risparmiato, 5: file rimanenti. */
-					'progress'  => __( 'Create %1$s · saltate %2$s · errori %3$s · risparmiati %4$s · rimangono %5$s', 'mm-optimizer' ),
-					'finished'  => __( 'Conversione completata.', 'mm-optimizer' ),
-					'stopped'   => __( 'Conversione interrotta.', 'mm-optimizer' ),
+					'detecting' => __( 'Detecting…', 'mm-optimizer' ),
+					'applying'  => __( 'Applying…', 'mm-optimizer' ),
+					'failed'    => __( 'The operation failed.', 'mm-optimizer' ),
+					'confirm'   => __( 'Replace the current settings with the recommended ones?', 'mm-optimizer' ),
+					'scanning'  => __( 'Scanning the library…', 'mm-optimizer' ),
+					/* translators: 1: derivatives created, 2: files skipped, 3: errors, 4: space saved, 5: files remaining. */
+					'progress'  => __( 'Created %1$s · skipped %2$s · errors %3$s · saved %4$s · %5$s remaining', 'mm-optimizer' ),
+					'finished'  => __( 'Conversion complete.', 'mm-optimizer' ),
+					'stopped'   => __( 'Conversion stopped.', 'mm-optimizer' ),
 				),
 			)
 		);
 	}
 
 	/**
-	 * Avvisi.
+	 * Notices.
 	 *
 	 * @return void
 	 */
@@ -109,7 +109,7 @@ class Admin {
 	}
 
 	/**
-	 * Avverte quando un altro ottimizzatore e' attivo.
+	 * Warns when another optimizer is active.
 	 *
 	 * @return void
 	 */
@@ -123,11 +123,11 @@ class Admin {
 		echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'MM Optimizer', 'mm-optimizer' ) . '</strong> — ';
 
 		printf(
-			/* translators: %s: elenco dei plugin in conflitto. */
+			/* translators: %s: list of conflicting plugins. */
 			esc_html(
 				_n(
-					'%s gestisce gia\' le immagini di questo sito, quindi la consegna di MM Optimizer resta spenta per non sovrapporsi. La conversione continua a funzionare: le derivate saranno pronte quando deciderai di passare.',
-					'%s gestiscono gia\' le immagini di questo sito, quindi la consegna di MM Optimizer resta spenta per non sovrapporsi. La conversione continua a funzionare: le derivate saranno pronte quando deciderai di passare.',
+					'%s already handles this site\'s images, so MM Optimizer keeps its delivery switched off to avoid overlapping. Conversion carries on: the derivatives will be ready when you decide to switch over.',
+					'%s already handle this site\'s images, so MM Optimizer keeps its delivery switched off to avoid overlapping. Conversion carries on: the derivatives will be ready when you decide to switch over.',
 					count( $active ),
 					'mm-optimizer'
 				)
@@ -138,14 +138,14 @@ class Admin {
 		printf(
 			' <a href="%s">%s</a>',
 			esc_url( admin_url( 'plugins.php' ) ),
-			esc_html__( 'Vai ai plugin', 'mm-optimizer' )
+			esc_html__( 'Go to plugins', 'mm-optimizer' )
 		);
 
 		echo '</p></div>';
 	}
 
 	/**
-	 * Avverte quando l'host non e' in grado di produrre formati moderni.
+	 * Warns when the host cannot produce modern formats.
 	 *
 	 * @return void
 	 */
@@ -163,11 +163,11 @@ class Admin {
 		}
 
 		echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'MM Optimizer', 'mm-optimizer' ) . '</strong> — ';
-		echo esc_html__( 'Nessuna libreria grafica di questo server sa produrre WebP o AVIF. Apri la scheda Diagnostica: elenca esattamente cosa chiedere all\'hosting.', 'mm-optimizer' );
+		echo esc_html__( 'No graphics library on this server can produce WebP or AVIF. Open the Diagnostics tab: it lists exactly what to ask your host for.', 'mm-optimizer' );
 		printf(
 			' <a href="%s">%s</a>',
 			esc_url( admin_url( 'admin.php?page=mm-optimizer' ) ),
-			esc_html__( 'Apri la diagnostica', 'mm-optimizer' )
+			esc_html__( 'Open diagnostics', 'mm-optimizer' )
 		);
 		echo '</p></div>';
 	}

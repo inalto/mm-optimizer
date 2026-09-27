@@ -1,9 +1,9 @@
 <?php
 /**
- * Dalle capacita' rilevate alle impostazioni consigliate.
+ * From detected capabilities to recommended settings.
  *
- * Ogni proposta porta con se' la ragione che l'ha prodotta: senza spiegazione
- * un consiglio e' solo un altro valore predefinito.
+ * Every proposal carries the reason that produced it: without an explanation,
+ * a recommendation is just another default.
  *
  * @package MM_Optimizer
  */
@@ -15,15 +15,15 @@ defined( 'ABSPATH' ) || exit;
 class Recommender {
 
 	/**
-	 * Analizza le capacita' e propone una configurazione.
+	 * Analyses the capabilities and proposes a configuration.
 	 *
-	 * @param array|null $caps Capacita'; se assenti vengono lette.
+	 * @param array|null $caps Capabilities; read when absent.
 	 * @return array {
-	 *     @type string $level    Livello consigliato.
-	 *     @type array  $settings Insieme parziale di opzioni.
-	 *     @type array  $reasons  Motivazioni, ciascuna con codice e livello.
-	 *     @type array  $blockers Impedimenti che limitano la proposta.
-	 *     @type int    $score    Indice di idoneita' dell'host, 0-100.
+	 *     @type string $level    Recommended level.
+	 *     @type array  $settings Partial set of options.
+	 *     @type array  $reasons  Reasons, each with a code and a level.
+	 *     @type array  $blockers Obstacles that limit the proposal.
+	 *     @type int    $score    Host suitability index, 0-100.
 	 * }
 	 */
 	public static function analyze( $caps = null ) {
@@ -37,7 +37,7 @@ class Recommender {
 		$webp_engine = isset( $caps['encoders']['image/webp']['engine'] ) ? $caps['encoders']['image/webp']['engine'] : '';
 		$avif_engine = isset( $caps['encoders']['image/avif']['engine'] ) ? $caps['encoders']['image/avif']['engine'] : '';
 
-		// R1 - formati di uscita.
+		// R1 - output formats.
 		$settings['webp'] = array( 'enabled' => $webp_engine ? 1 : 0, 'engine' => 'auto', 'deliver' => $webp_engine ? 1 : 0 );
 		$settings['avif'] = array( 'enabled' => $avif_engine ? 1 : 0, 'engine' => 'auto', 'deliver' => $avif_engine ? 1 : 0 );
 
@@ -45,11 +45,11 @@ class Recommender {
 			$blockers[] = self::reason(
 				'no_modern_encoder',
 				'error',
-				__( 'Questo server non sa produrre ne\' WebP ne\' AVIF: nessuna libreria grafica ha superato la prova funzionale. Chiedi all\'hosting di abilitare GD con supporto WebP e AVIF, oppure l\'estensione Imagick.', 'mm-optimizer' )
+				__( 'This server can produce neither WebP nor AVIF: no graphics library passed the functional test. Ask your host to enable GD with WebP and AVIF support, or the Imagick extension.', 'mm-optimizer' )
 			);
 		}
 
-		// R2 - motore per formato, deciso dalla misura, non da una preferenza.
+		// R2 - engine per format, decided by measurement rather than preference.
 		foreach ( array( 'image/webp' => 'WebP', 'image/avif' => 'AVIF' ) as $mime => $label ) {
 			$entry = isset( $caps['encoders'][ $mime ] ) ? $caps['encoders'][ $mime ] : array();
 
@@ -61,8 +61,8 @@ class Recommender {
 				'engine_selected',
 				'good',
 				sprintf(
-					/* translators: 1: formato immagine, 2: nome del motore, 3: byte prodotti, 4: spiegazione della scelta. */
-					__( '%1$s: scelto %2$s (%3$s sul campione di prova) — %4$s', 'mm-optimizer' ),
+					/* translators: 1: image format, 2: engine name, 3: bytes produced, 4: explanation of the choice. */
+					__( '%1$s: chose %2$s (%3$s on the test sample) — %4$s', 'mm-optimizer' ),
 					$label,
 					$entry['engine'],
 					size_format( (int) $entry['bytes'] ),
@@ -75,11 +75,11 @@ class Recommender {
 			$reasons[] = self::reason(
 				'avif_unavailable',
 				'warning',
-				__( 'AVIF non disponibile: nessun codificatore lo supporta. E\' il formato che rende di piu\' (circa il 67% in meno contro il 45% del WebP), quindi vale la pena chiedere all\'hosting un PHP con GD compilato con AVIF, oppure il pacchetto avifenc.', 'mm-optimizer' )
+				__( 'AVIF is unavailable: no encoder on this server supports it. It is the format that pays off most (around 67% smaller against WebP\'s 45%), so it is worth asking your host for a PHP build with AVIF-enabled GD, or the avifenc package.', 'mm-optimizer' )
 			);
 		}
 
-		// R3 - livello, in base alle risorse disponibili.
+		// R3 - level, according to the resources available.
 		$memory   = isset( $caps['env']['memory_limit'] ) ? (int) $caps['env']['memory_limit'] : 0;
 		$max_exec = isset( $caps['env']['max_execution_time'] ) ? (int) $caps['env']['max_execution_time'] : 0;
 
@@ -92,9 +92,9 @@ class Recommender {
 				'level_conservative',
 				'warning',
 				sprintf(
-					/* translators: 1: limite di memoria, 2: tempo massimo di esecuzione in secondi. */
-					__( 'Livello Conservativo: le risorse sono strette (memoria %1$s, tempo massimo %2$d s). Le immagini molto grandi verranno saltate invece di far fallire la richiesta.', 'mm-optimizer' ),
-					$memory > 0 ? size_format( $memory ) : __( 'non dichiarata', 'mm-optimizer' ),
+					/* translators: 1: memory limit, 2: maximum execution time in seconds. */
+					__( 'Conservative level: resources are tight (memory %1$s, time limit %2$d s). Very large images will be skipped rather than allowed to fail the request.', 'mm-optimizer' ),
+					$memory > 0 ? size_format( $memory ) : __( 'not declared', 'mm-optimizer' ),
 					$max_exec
 				)
 			);
@@ -102,11 +102,11 @@ class Recommender {
 			$reasons[] = self::reason(
 				'level_balanced',
 				'good',
-				__( 'Livello Bilanciato: risorse sufficienti. Circa il 45% in meno con WebP e il 66% in meno con AVIF, senza differenze visibili sulle fotografie.', 'mm-optimizer' )
+				__( 'Balanced level: resources are sufficient. Around 45% smaller with WebP and 66% smaller with AVIF, with no visible difference on photographs.', 'mm-optimizer' )
 			);
 		}
 
-		// R5 - ottimizzazione senza perdita delle miniature.
+		// R5 - lossless thumbnail optimization.
 		$settings['optimize'] = array(
 			'jpeg' => ! empty( $caps['lossless']['image/jpeg']['available'] ) ? 1 : 0,
 			'png'  => ! empty( $caps['lossless']['image/png']['available'] ) ? 1 : 0,
@@ -117,7 +117,7 @@ class Recommender {
 			$reasons[] = self::reason(
 				'no_jpeg_lossless_tool',
 				'warning',
-				__( 'Ottimizzazione JPEG senza perdita non disponibile: nessuna libreria PHP sa ricomprimere un JPEG senza degradarlo, serve un binario dedicato. Chiedi all\'hosting il pacchetto jpegoptim. Nel frattempo il guadagno arriva tutto dalle derivate WebP e AVIF.', 'mm-optimizer' )
+				__( 'Lossless JPEG optimization is unavailable: no PHP library can recompress a JPEG without degrading it, which takes a dedicated binary. Ask your host for the jpegoptim package. In the meantime all the gain comes from the WebP and AVIF derivatives.', 'mm-optimizer' )
 			);
 		}
 
@@ -126,11 +126,11 @@ class Recommender {
 			$blockers[]           = self::reason(
 				'thumbnails_conflict',
 				'warning',
-				__( 'Ottimizzazione delle miniature disattivata: EWWW Image Optimizer e\' attivo e riscrive gli stessi file. Due ottimizzatori sullo stesso file sono un rischio concreto di corruzione.', 'mm-optimizer' )
+				__( 'Thumbnail optimization is switched off: EWWW Image Optimizer is active and rewrites the same files. Two optimizers working on one file is a real corruption risk.', 'mm-optimizer' )
 			);
 		}
 
-		// R6 - modalita' di consegna.
+		// R6 - delivery mode.
 		$conflicts = Conflicts::active();
 
 		if ( ! empty( $conflicts ) ) {
@@ -139,8 +139,8 @@ class Recommender {
 				'conflict_active',
 				'warning',
 				sprintf(
-					/* translators: %s: elenco dei plugin in conflitto. */
-					__( 'Consegna disattivata: %s gestisce gia\' le immagini di questo sito. La conversione resta attiva, cosi\' le derivate sono pronte: la consegna si accendera\' da sola quando disattiverai l\'altro plugin.', 'mm-optimizer' ),
+					/* translators: %s: list of conflicting plugins. */
+					__( 'Delivery is switched off: %s already handles this site\'s images. Conversion stays on, so the derivatives are ready: delivery will arm itself once you deactivate the other plugin.', 'mm-optimizer' ),
 					implode( ', ', $conflicts )
 				)
 			);
@@ -149,33 +149,33 @@ class Recommender {
 			$reasons[]            = self::reason(
 				'delivery_picture',
 				'good',
-				__( 'Consegna con <picture>: il markup contiene tutte le varianti e sceglie il browser. A differenza della negoziazione via .htaccess non richiede Vary: Accept e non disturba la cache di pagina o la CDN.', 'mm-optimizer' )
+				__( 'Delivery via <picture>: the markup carries every variant and the browser chooses. Unlike .htaccess negotiation it needs no Vary: Accept and leaves page caches and CDNs alone.', 'mm-optimizer' )
 			);
 		}
 
-		// Il MIME di .avif: senza, in modalita' <picture> Firefox e Safari
-		// falliscono senza ripiegare sull'<img>.
-		$avif_mime = isset( $caps['delivery']['avif_mime_registered'] ) ? $caps['delivery']['avif_mime_registered'] : null;
+		// The .avif MIME type: without it, in <picture> mode Firefox and Safari
+		// fail with no fallback to the <img>.
+		$mime_ok = isset( $caps['delivery']['avif_mime_registered'] ) ? $caps['delivery']['avif_mime_registered'] : null;
 
-		if ( $avif_engine && false === $avif_mime ) {
+		if ( $avif_engine && false === $mime_ok ) {
 			if ( ! empty( $caps['delivery']['htaccess_writable'] ) ) {
 				$settings['delivery']['addtype'] = 1;
 				$reasons[]                       = self::reason(
 					'avif_mime_addtype',
 					'warning',
-					__( 'Questo server consegna i file .avif con il tipo MIME sbagliato (manca da /etc/mime.types). Verra\' scritta una riga AddType nel .htaccess: senza, Firefox e Safari scelgono la sorgente AVIF e poi non la decodificano, senza ripiegare sull\'immagine originale.', 'mm-optimizer' )
+					__( 'This server delivers .avif files with the wrong MIME type (it is missing from /etc/mime.types). An AddType line will be written into .htaccess: without it, Firefox and Safari pick the AVIF source and then fail to decode it, with no fallback to the original image.', 'mm-optimizer' )
 				);
 			} else {
 				$settings['avif']['deliver'] = 0;
 				$blockers[]                  = self::reason(
 					'avif_mime_blocked',
 					'error',
-					__( 'AVIF generato ma non consegnato: il server lo restituisce con il tipo MIME sbagliato e il .htaccess non e\' scrivibile. Consegnare una sorgente che il browser sceglie e poi non sa decodificare e\' peggio che non consegnarla. Aggiungi "AddType image/avif .avif" alla configurazione del server per abilitarla.', 'mm-optimizer' )
+					__( 'AVIF is generated but not delivered: the server returns it with the wrong MIME type and .htaccess is not writable. Delivering a source the browser picks and then cannot decode is worse than not delivering it. Add "AddType image/avif .avif" to the server configuration to enable it.', 'mm-optimizer' )
 				);
 			}
 		}
 
-		// R7 - quali dimensioni convertire.
+		// R7 - which sizes to convert.
 		$subsizes = function_exists( 'wp_get_registered_image_subsizes' ) ? count( wp_get_registered_image_subsizes() ) : 0;
 
 		$settings['sizes'] = array( 'mode' => $subsizes > 10 ? 'srcset' : 'all' );
@@ -185,10 +185,10 @@ class Recommender {
 				'sizes_srcset',
 				'good',
 				sprintf(
-					/* translators: %d: numero di dimensioni registrate. */
+					/* translators: %d: number of registered image sizes. */
 					_n(
-						'Sono registrata %d dimensione immagine: verranno convertite solo quelle che compaiono davvero nel srcset.',
-						'Sono registrate %d dimensioni immagine: convertirle tutte in due formati moltiplicherebbe il lavoro senza vantaggi, quindi verranno convertite solo quelle che compaiono davvero nel srcset.',
+						'%d image size is registered: only the ones that actually appear in a srcset will be converted.',
+						'%d image sizes are registered: converting them all into two formats would multiply the work for no benefit, so only the ones that actually appear in a srcset will be converted.',
 						$subsizes,
 						'mm-optimizer'
 					),
@@ -197,7 +197,7 @@ class Recommender {
 			);
 		}
 
-		// R8 - dimensione del lotto e motore di coda.
+		// R8 - batch size and queue driver.
 		$settings['bulk'] = array(
 			'driver' => '' !== $caps['env']['managed_host'] ? 'cron' : 'auto',
 			'batch'  => $tight ? 2 : 5,
@@ -208,19 +208,19 @@ class Recommender {
 				'managed_host',
 				'info',
 				sprintf(
-					/* translators: %s: nome dell'hosting gestito. */
-					__( 'Hosting gestito rilevato (%s): la ricerca dei binari e\' stata saltata perche\' non sarebbero eseguibili, e la coda usera\' il cron invece delle richieste in loopback.', 'mm-optimizer' ),
+					/* translators: %s: name of the managed host. */
+					__( 'Managed host detected (%s): binary discovery was skipped because they would not be executable, and the queue will use cron rather than loopback requests.', 'mm-optimizer' ),
 					$caps['env']['managed_host']
 				)
 			);
 		}
 
-		// Avvertenze d'ambiente che non cambiano la proposta ma vanno dette.
+		// Environment warnings that do not change the proposal but need saying.
 		if ( empty( $caps['env']['file_uploads'] ) ) {
 			$blockers[] = self::reason(
 				'file_uploads_off',
 				'error',
-				__( 'La direttiva PHP file_uploads e\' disattivata: nessun caricamento nella Libreria media puo\' funzionare, indipendentemente da questo plugin. La conversione in blocco delle immagini gia\' presenti funziona comunque.', 'mm-optimizer' )
+				__( 'The PHP file_uploads directive is disabled: no Media Library upload can work, with or without this plugin. Bulk conversion of the images already present works regardless.', 'mm-optimizer' )
 			);
 		}
 
@@ -228,7 +228,7 @@ class Recommender {
 			$blockers[] = self::reason(
 				'uploads_unwritable',
 				'error',
-				__( 'La cartella degli upload non e\' scrivibile: non e\' possibile creare nessuna derivata.', 'mm-optimizer' )
+				__( 'The uploads directory is not writable: no derivative can be created.', 'mm-optimizer' )
 			);
 		}
 
@@ -239,8 +239,8 @@ class Recommender {
 					'claimed_not_verified',
 					'error',
 					sprintf(
-						/* translators: 1: nome della libreria, 2: tipo MIME. */
-						__( '%1$s dichiara di supportare %2$s ma la prova di codifica e\' fallita. Il formato resta disattivato: e\' esattamente la situazione che produce file corrotti in silenzio.', 'mm-optimizer' ),
+						/* translators: 1: library name, 2: MIME type. */
+						__( '%1$s claims to support %2$s but the encoding test failed. The format stays off on purpose: this is exactly the situation that produces silently corrupted files.', 'mm-optimizer' ),
 						$parts[1],
 						$parts[2]
 					)
@@ -258,23 +258,23 @@ class Recommender {
 	}
 
 	/**
-	 * Applica la proposta passando dalla sanificazione delle opzioni.
+	 * Applies the proposal, going through option sanitization.
 	 *
-	 * @param array|null $caps Capacita'.
-	 * @return array Opzioni risultanti.
+	 * @param array|null $caps Capabilities.
+	 * @return array Resulting options.
 	 */
 	public static function apply( $caps = null ) {
 		$analysis = self::analyze( $caps );
 
-		Log::add( __( 'Applicata la configurazione consigliata.', 'mm-optimizer' ), 'info', array( 'level' => $analysis['level'] ) );
+		Log::add( __( 'Recommended configuration applied.', 'mm-optimizer' ), 'info', array( 'level' => $analysis['level'] ) );
 
 		return Options::apply_partial( $analysis['settings'] );
 	}
 
 	/**
-	 * Indice sintetico di idoneita' dell'host.
+	 * Single suitability index for the host.
 	 *
-	 * @param array $caps Capacita'.
+	 * @param array $caps Capabilities.
 	 * @return int 0-100.
 	 */
 	protected static function score( array $caps ) {
@@ -292,6 +292,7 @@ class Recommender {
 		if ( ! empty( $caps['env']['uploads_writable'] ) ) {
 			$score += 10;
 		}
+
 		$mime_ok = isset( $caps['delivery']['avif_mime_registered'] ) ? $caps['delivery']['avif_mime_registered'] : null;
 
 		if ( false !== $mime_ok || ! empty( $caps['delivery']['htaccess_writable'] ) ) {
@@ -302,28 +303,28 @@ class Recommender {
 	}
 
 	/**
-	 * Spiegazione testuale della scelta di un motore.
+	 * Text explaining why an engine was chosen.
 	 *
-	 * @param string $why          Codice.
-	 * @param array  $alternatives Motori scartati.
+	 * @param string $why          Code.
+	 * @param array  $alternatives Engines that lost.
 	 * @return string
 	 */
 	protected static function why_text( $why, array $alternatives ) {
 		switch ( $why ) {
 			case 'only_candidate':
-				return __( 'unico codificatore disponibile.', 'mm-optimizer' );
+				return __( 'the only encoder available.', 'mm-optimizer' );
 
 			case 'tie_on_bytes_faster':
 				return sprintf(
-					/* translators: %s: elenco dei motori scartati. */
-					__( 'a parita\' di byte con %s, ma piu\' veloce.', 'mm-optimizer' ),
+					/* translators: %s: list of engines that lost. */
+					__( 'tied on bytes with %s, but faster.', 'mm-optimizer' ),
 					implode( ', ', $alternatives )
 				);
 
 			case 'smallest_output':
 				return sprintf(
-					/* translators: %s: elenco dei motori scartati. */
-					__( 'ha prodotto il file piu\' piccolo, battendo %s.', 'mm-optimizer' ),
+					/* translators: %s: list of engines that lost. */
+					__( 'produced the smallest file, beating %s.', 'mm-optimizer' ),
 					implode( ', ', $alternatives )
 				);
 		}
@@ -332,11 +333,11 @@ class Recommender {
 	}
 
 	/**
-	 * Costruisce una motivazione.
+	 * Builds a reason.
 	 *
-	 * @param string $code  Codice simbolico.
-	 * @param string $level 'good', 'info', 'warning' oppure 'error'.
-	 * @param string $text  Testo gia' tradotto.
+	 * @param string $code  Symbolic code.
+	 * @param string $level 'good', 'info', 'warning' or 'error'.
+	 * @param string $text  Already-translated text.
 	 * @return array
 	 */
 	protected static function reason( $code, $level, $text ) {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Agganci del ciclo di vita degli allegati.
+ * Attachment lifecycle hooks.
  *
  * @package MM_Optimizer
  */
@@ -12,61 +12,61 @@ defined( 'ABSPATH' ) || exit;
 class Attachment_Hooks {
 
 	/**
-	 * Allegati gia' presi in carico in questa richiesta.
+	 * Attachments already handled during this request.
 	 *
-	 * wp_generate_attachment_metadata e wp_update_attachment_metadata possono
-	 * scattare entrambi per lo stesso caricamento.
+	 * wp_generate_attachment_metadata and wp_update_attachment_metadata can
+	 * both fire for the same upload.
 	 *
 	 * @var array
 	 */
 	protected static $seen = array();
 
 	/**
-	 * Registra gli agganci.
+	 * Registers the hooks.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		// Priorita' 20: dopo il nucleo e dopo i plugin che aggiungono
-		// dimensioni, cosi' il piano le comprende tutte.
+		// Priority 20: after core and after plugins that add sizes, so the
+		// plan covers all of them.
 		add_filter( 'wp_generate_attachment_metadata', array( __CLASS__, 'on_metadata' ), 20, 3 );
 		add_filter( 'wp_update_attachment_metadata', array( __CLASS__, 'on_meta_update' ), 20, 2 );
 
-		// Prima che il nucleo rimuova i file: i metadati servono ancora.
+		// Before core removes the files: the metadata is still needed.
 		add_action( 'delete_attachment', array( __CLASS__, 'on_delete' ), 10, 2 );
 
-		// Rete di sicurezza: qualunque file cancellato dal nucleo porta con se'
-		// le proprie derivate. Copre la rigenerazione delle miniature e il
-		// ripristino dell'originale dall'editor immagini.
+		// Safety net: any file core deletes takes its derivatives with it.
+		// Covers thumbnail regeneration and "restore original" in the image
+		// editor.
 		add_filter( 'wp_delete_file', array( __CLASS__, 'on_delete_file' ), 10, 1 );
 
-		// Qualita' con cui WordPress genera le miniature: e' qui che si
-		// ottimizzano, al momento in cui nascono, invece di ricomprimerle
-		// dopo con una seconda perdita.
+		// The quality WordPress uses to generate thumbnails. This is where
+		// they get optimized, as they are created, instead of recompressing
+		// them afterwards with a second round of loss.
 		add_filter( 'wp_editor_set_quality', array( __CLASS__, 'filter_quality' ), 10, 2 );
 		add_filter( 'jpeg_quality', array( __CLASS__, 'filter_jpeg_quality' ), 10, 2 );
 	}
 
 	/**
-	 * Alla creazione dei metadati.
+	 * On metadata creation.
 	 *
-	 * @param array  $metadata      Metadati.
-	 * @param int    $attachment_id Identificativo.
-	 * @param string $context       'create' oppure 'update'.
-	 * @return array Metadati, non modificati.
+	 * @param array  $metadata      Metadata.
+	 * @param int    $attachment_id Identifier.
+	 * @param string $context       'create' or 'update'.
+	 * @return array Metadata, unchanged.
 	 */
 	public static function on_metadata( $metadata, $attachment_id = 0, $context = '' ) {
 		self::enqueue( (int) $attachment_id, $metadata );
 
-		// I metadati del nucleo non vengono mai alterati.
+		// Core metadata is never altered.
 		return $metadata;
 	}
 
 	/**
-	 * All'aggiornamento dei metadati.
+	 * On metadata update.
 	 *
-	 * @param array $metadata      Metadati.
-	 * @param int   $attachment_id Identificativo.
+	 * @param array $metadata      Metadata.
+	 * @param int   $attachment_id Identifier.
 	 * @return array
 	 */
 	public static function on_meta_update( $metadata, $attachment_id = 0 ) {
@@ -76,10 +76,10 @@ class Attachment_Hooks {
 	}
 
 	/**
-	 * Mette in lavorazione un allegato.
+	 * Schedules an attachment for work.
 	 *
-	 * @param int   $attachment_id Identificativo.
-	 * @param array $metadata      Metadati.
+	 * @param int   $attachment_id Identifier.
+	 * @param array $metadata      Metadata.
 	 * @return void
 	 */
 	protected static function enqueue( $attachment_id, $metadata ) {
@@ -103,18 +103,17 @@ class Attachment_Hooks {
 			return;
 		}
 
-		// Priorita' 5: un caricamento nuovo passa davanti a un arretrato in
-		// corso di smaltimento.
+		// Priority 5: a fresh upload jumps ahead of a backlog being cleared.
 		Queue::push( $paths, $attachment_id, 'upload', 5 );
 
 		Queue::spawn();
 	}
 
 	/**
-	 * Alla cancellazione di un allegato.
+	 * On attachment deletion.
 	 *
-	 * @param int      $attachment_id Identificativo.
-	 * @param \WP_Post $post          Oggetto allegato.
+	 * @param int      $attachment_id Identifier.
+	 * @param \WP_Post $post          Attachment object.
 	 * @return void
 	 */
 	public static function on_delete( $attachment_id, $post = null ) {
@@ -123,13 +122,13 @@ class Attachment_Hooks {
 	}
 
 	/**
-	 * A ogni file cancellato dal nucleo.
+	 * On every file core deletes.
 	 *
-	 * @param string $file Percorso.
-	 * @return string Percorso, non modificato.
+	 * @param string $file Path.
+	 * @return string Path, unchanged.
 	 */
 	public static function on_delete_file( $file ) {
-		// Mai inseguire la cancellazione di una derivata con se stessa.
+		// Never chase a derivative's deletion with itself.
 		if ( preg_match( '/\.(webp|avif)$/i', (string) $file ) ) {
 			return $file;
 		}
@@ -141,10 +140,10 @@ class Attachment_Hooks {
 	}
 
 	/**
-	 * Qualita' delle miniature generate da WordPress.
+	 * Quality for thumbnails generated by WordPress.
 	 *
-	 * @param int    $quality Qualita' proposta dal nucleo.
-	 * @param string $mime    Tipo MIME.
+	 * @param int    $quality Quality proposed by core.
+	 * @param string $mime    MIME type.
 	 * @return int
 	 */
 	public static function filter_quality( $quality, $mime = '' ) {
@@ -163,15 +162,15 @@ class Attachment_Hooks {
 	}
 
 	/**
-	 * Qualita' JPEG.
+	 * JPEG quality.
 	 *
-	 * @param int    $quality Qualita'.
-	 * @param string $context Contesto.
+	 * @param int    $quality Quality.
+	 * @param string $context Context.
 	 * @return int
 	 */
 	public static function filter_jpeg_quality( $quality, $context = '' ) {
-		// L'editor immagini di WordPress salva l'originale modificato: non e'
-		// una miniatura e non va toccato.
+		// The WordPress image editor saves the edited original: that is not a
+		// thumbnail and must not be touched.
 		if ( 'edit_image' === $context ) {
 			return $quality;
 		}

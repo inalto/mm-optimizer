@@ -1,11 +1,10 @@
 <?php
 /**
- * Corrispondenza fra file sorgente e derivate.
+ * Mapping between source files and derivatives.
  *
- * Unico punto del plugin che conosce lo schema di denominazione. Il percorso
- * della derivata non viene mai memorizzato nel database: e' una funzione pura
- * della sorgente e del formato, e memorizzarlo lascerebbe solo che i due
- * valori divergano.
+ * The only place in the plugin that knows the naming scheme. A derivative's
+ * path is never stored in the database: it is a pure function of the source
+ * and the format, and storing it would only let the two drift apart.
  *
  * @package MM_Optimizer
  */
@@ -17,9 +16,9 @@ defined( 'ABSPATH' ) || exit;
 class Paths {
 
 	/**
-	 * Formati producibili.
+	 * Producible formats, in order of preference.
 	 *
-	 * @return array Formato => tipo MIME.
+	 * @return array Format => MIME type.
 	 */
 	public static function formats() {
 		return array(
@@ -29,7 +28,7 @@ class Paths {
 	}
 
 	/**
-	 * Tipi MIME che possono fare da sorgente.
+	 * MIME types accepted as a source.
 	 *
 	 * @return array
 	 */
@@ -38,14 +37,15 @@ class Paths {
 	}
 
 	/**
-	 * Percorso della derivata.
+	 * Path of a derivative.
 	 *
-	 * Lo schema aggiunge l'estensione invece di sostituirla: "foto.jpg.webp"
-	 * e non "foto.webp". Sostituirla farebbe collidere foto.jpg e foto.png
-	 * nella stessa cartella, e collidere con un .webp caricato davvero.
+	 * The scheme appends the extension rather than replacing it:
+	 * "photo.jpg.webp", not "photo.webp". Replacing it would make photo.jpg
+	 * and photo.png collide in the same directory, and collide with a genuinely
+	 * uploaded .webp.
 	 *
-	 * @param string $source Percorso della sorgente.
-	 * @param string $format 'webp' oppure 'avif'.
+	 * @param string $source Source path.
+	 * @param string $format 'webp' or 'avif'.
 	 * @return string
 	 */
 	public static function derivative( $source, $format ) {
@@ -63,13 +63,13 @@ class Paths {
 	}
 
 	/**
-	 * URL della derivata.
+	 * URL of a derivative.
 	 *
-	 * Operazione di sola stringa: nel percorso critico della consegna una
-	 * pagina puo' richiedere centinaia di questi calcoli.
+	 * Pure string work: in the delivery hot path a single page can ask for
+	 * hundreds of these.
 	 *
-	 * @param string $url    URL della sorgente.
-	 * @param string $format 'webp' oppure 'avif'.
+	 * @param string $url    Source URL.
+	 * @param string $format 'webp' or 'avif'.
 	 * @return string
 	 */
 	public static function derivative_url( $url, $format ) {
@@ -85,7 +85,7 @@ class Paths {
 	}
 
 	/**
-	 * Cartella dell'albero parallelo.
+	 * Directory of the parallel tree.
 	 *
 	 * @return string
 	 */
@@ -94,10 +94,10 @@ class Paths {
 	}
 
 	/**
-	 * Tutte le derivate possibili di una sorgente, esistenti o no.
+	 * Every possible derivative of a source, whether it exists or not.
 	 *
-	 * @param string $source Percorso della sorgente.
-	 * @return array Formato => percorso.
+	 * @param string $source Source path.
+	 * @return array Format => path.
 	 */
 	public static function all_derivatives( $source ) {
 		$out = array();
@@ -110,10 +110,10 @@ class Paths {
 	}
 
 	/**
-	 * Converte un URL degli upload nel percorso su disco.
+	 * Converts an uploads URL into a path on disk.
 	 *
 	 * @param string $url URL.
-	 * @return string Percorso assoluto, oppure stringa vuota se esterno.
+	 * @return string Absolute path, or an empty string when external.
 	 */
 	public static function url_to_path( $url ) {
 		$baseurl = Base::uploads_baseurl();
@@ -123,12 +123,12 @@ class Paths {
 			return '';
 		}
 
-		// Normalizza lo schema: l'URL in pagina puo' essere https mentre
-		// l'URL degli upload e' http, o viceversa.
+		// Normalise the scheme: the URL on the page may be https while the
+		// uploads URL is http, or the other way round.
 		$url     = preg_replace( '#^https?://#', '//', (string) $url );
 		$baseurl = preg_replace( '#^https?://#', '//', $baseurl );
 
-		// Scarta la stringa di interrogazione.
+		// Drop the query string.
 		$url = strtok( $url, '?' );
 
 		if ( 0 !== strpos( $url, $baseurl ) ) {
@@ -137,7 +137,7 @@ class Paths {
 
 		$relative = ltrim( substr( $url, strlen( $baseurl ) ), '/' );
 
-		// Nessuna risalita nell'albero.
+		// No walking back up the tree.
 		if ( false !== strpos( $relative, '..' ) ) {
 			return '';
 		}
@@ -146,10 +146,10 @@ class Paths {
 	}
 
 	/**
-	 * Rimuove tutte le derivate di una sorgente.
+	 * Removes every derivative of a source.
 	 *
-	 * @param string $source Percorso della sorgente.
-	 * @return int Numero di file rimossi.
+	 * @param string $source Source path.
+	 * @return int Number of files removed.
 	 */
 	public static function delete_derivatives( $source ) {
 		$removed = 0;

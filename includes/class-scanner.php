@@ -1,6 +1,6 @@
 <?php
 /**
- * Costruzione di un lavoro in blocco.
+ * Builds a bulk job.
  *
  * @package MM_Optimizer
  */
@@ -14,23 +14,23 @@ class Scanner {
 	const OFFSET = 'mm_optimizer_scan_offset';
 
 	/**
-	 * Numero di allegati esaminati per passata.
+	 * Attachments examined per pass.
 	 *
 	 * @var int
 	 */
 	const PAGE = 200;
 
 	/**
-	 * Aggiunge alla coda una passata di allegati.
+	 * Queues one pass of attachments.
 	 *
-	 * Ritorna dopo una pagina, cosi' che la scansione di una libreria da
-	 * migliaia di immagini possa avanzare senza superare il tempo massimo.
+	 * Returns after a single page, so that scanning a library of thousands of
+	 * images can make progress without blowing the execution time limit.
 	 *
-	 * @param bool $restart Ricomincia da capo.
+	 * @param bool $restart Start again from the beginning.
 	 * @return array {
-	 *     @type int  $scanned  Allegati esaminati.
-	 *     @type int  $queued   Righe accodate.
-	 *     @type bool $finished Vero quando non resta altro.
+	 *     @type int  $scanned  Attachments examined.
+	 *     @type int  $queued   Rows queued.
+	 *     @type bool $finished True when nothing is left.
 	 * }
 	 */
 	public static function step( $restart = false ) {
@@ -89,11 +89,11 @@ class Scanner {
 	}
 
 	/**
-	 * Scarta i file le cui derivate sono gia' complete e aggiornate.
+	 * Drops files whose derivatives are already complete and up to date.
 	 *
-	 * Una sola interrogazione per allegato invece di una per file.
+	 * One query per attachment rather than one per file.
 	 *
-	 * @param array $paths Percorsi.
+	 * @param array $paths Paths.
 	 * @return array
 	 */
 	protected static function pending_only( array $paths ) {
@@ -126,7 +126,7 @@ class Scanner {
 	}
 
 	/**
-	 * Quante immagini contiene la libreria.
+	 * How many images the library holds.
 	 *
 	 * @return int
 	 */

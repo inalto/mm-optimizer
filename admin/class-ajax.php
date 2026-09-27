@@ -1,6 +1,6 @@
 <?php
 /**
- * Gestori AJAX di amministrazione.
+ * Admin AJAX handlers.
  *
  * @package MM_Optimizer
  */
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 class Admin_Ajax {
 
 	/**
-	 * Registra gli agganci.
+	 * Registers the hooks.
 	 *
 	 * @return void
 	 */
@@ -27,7 +27,7 @@ class Admin_Ajax {
 	}
 
 	/**
-	 * Verifica permessi e nonce.
+	 * Checks permissions and the nonce.
 	 *
 	 * @return void
 	 */
@@ -35,12 +35,12 @@ class Admin_Ajax {
 		check_ajax_referer( 'mm_optimizer_admin', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permessi insufficienti.', 'mm-optimizer' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'mm-optimizer' ) ), 403 );
 		}
 	}
 
 	/**
-	 * Riesegue il rilevamento.
+	 * Re-runs detection.
 	 *
 	 * @return void
 	 */
@@ -53,8 +53,8 @@ class Admin_Ajax {
 		wp_send_json_success(
 			array(
 				'message'  => sprintf(
-					/* translators: %d: durata del rilevamento in millisecondi. */
-					__( 'Rilevamento completato in %d ms.', 'mm-optimizer' ),
+					/* translators: %d: detection duration in milliseconds. */
+					__( 'Detection completed in %d ms.', 'mm-optimizer' ),
 					(int) $caps['duration_ms']
 				),
 				'duration' => (int) $caps['duration_ms'],
@@ -63,7 +63,7 @@ class Admin_Ajax {
 	}
 
 	/**
-	 * Applica la configurazione consigliata.
+	 * Applies the recommended configuration.
 	 *
 	 * @return void
 	 */
@@ -77,8 +77,8 @@ class Admin_Ajax {
 		wp_send_json_success(
 			array(
 				'message' => sprintf(
-					/* translators: %s: nome del livello di ottimizzazione applicato. */
-					__( 'Configurazione applicata: livello %s.', 'mm-optimizer' ),
+					/* translators: %s: name of the optimization level applied. */
+					__( 'Configuration applied: %s level.', 'mm-optimizer' ),
 					Presets::label( $analysis['level'] )
 				),
 			)
@@ -86,14 +86,14 @@ class Admin_Ajax {
 	}
 
 	/**
-	 * Una passata di scansione della libreria.
+	 * One scanning pass over the library.
 	 *
 	 * @return void
 	 */
 	public static function bulk_scan() {
 		self::guard();
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- gia' verificato da guard().
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- already verified by guard().
 		$restart = ! empty( $_POST['restart'] );
 
 		if ( $restart ) {
@@ -114,15 +114,15 @@ class Admin_Ajax {
 	}
 
 	/**
-	 * Lavora un lotto e restituisce l'avanzamento.
+	 * Works a batch and reports progress.
 	 *
 	 * @return void
 	 */
 	public static function bulk_tick() {
 		self::guard();
 
-		// Un lotto guidato dal browser sta piu' stretto: la richiesta deve
-		// rispondere prima che il browser si stanchi di aspettare.
+		// A browser-driven batch runs tighter: the request has to answer
+		// before the browser gives up waiting.
 		$summary = Queue::run( microtime( true ) + 20 );
 		$state   = Queue::state();
 
@@ -140,7 +140,7 @@ class Admin_Ajax {
 	}
 
 	/**
-	 * Svuota la coda.
+	 * Empties the queue.
 	 *
 	 * @return void
 	 */
@@ -150,11 +150,11 @@ class Admin_Ajax {
 		Queue::clear();
 		Queue::reset_state( 0 );
 
-		wp_send_json_success( array( 'message' => __( 'Coda svuotata.', 'mm-optimizer' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Queue cleared.', 'mm-optimizer' ) ) );
 	}
 
 	/**
-	 * Importa le impostazioni dal plugin precedente.
+	 * Imports the settings from the previous plugin.
 	 *
 	 * @return void
 	 */
@@ -166,8 +166,8 @@ class Admin_Ajax {
 		wp_send_json_success(
 			array(
 				'message' => sprintf(
-					/* translators: %s: nome del livello di ottimizzazione risultante. */
-					__( 'Impostazioni importate. Livello risultante: %s.', 'mm-optimizer' ),
+					/* translators: %s: name of the resulting optimization level. */
+					__( 'Settings imported. Resulting level: %s.', 'mm-optimizer' ),
 					Presets::label( Options::get( 'level' ) )
 				),
 			)
@@ -175,7 +175,7 @@ class Admin_Ajax {
 	}
 
 	/**
-	 * Adotta una passata di file gia' convertiti.
+	 * Adopts one pass of already-converted files.
 	 *
 	 * @return void
 	 */
@@ -190,8 +190,8 @@ class Admin_Ajax {
 				'skipped'  => (int) $step['skipped'],
 				'finished' => (bool) $step['finished'],
 				'message'  => sprintf(
-					/* translators: 1: file adottati in questa passata, 2: file ignorati. */
-					__( 'Adottati %1$s file, ignorati %2$s.', 'mm-optimizer' ),
+					/* translators: 1: files adopted in this pass, 2: files ignored. */
+					__( 'Adopted %1$s files, ignored %2$s.', 'mm-optimizer' ),
 					number_format_i18n( (int) $step['adopted'] ),
 					number_format_i18n( (int) $step['skipped'] )
 				),
