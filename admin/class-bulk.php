@@ -18,6 +18,7 @@ class Bulk {
 	 */
 	public static function render() {
 		$state     = Queue::state();
+		$queued    = Queue::remaining();
 		$totals    = Records::totals();
 		$formats   = Converter::enabled_formats();
 		$library   = Scanner::total_attachments();
@@ -43,17 +44,42 @@ class Bulk {
 		self::row( __( 'Skipped (no gain)', 'mm-optimizer' ), number_format_i18n( $totals['skipped'] ) );
 		self::row( __( 'Errors', 'mm-optimizer' ), number_format_i18n( $totals['error'] ) );
 		self::row( __( 'Space saved', 'mm-optimizer' ), size_format( $totals['saved'], 1 ) );
-		self::row( __( 'Queued', 'mm-optimizer' ), number_format_i18n( $state['remaining'] ) );
+		self::row( __( 'Queued', 'mm-optimizer' ), number_format_i18n( $queued ) );
 		echo '</tbody></table>';
 
 		echo '<div class="mm-opt-bulk" style="margin-top:20px">';
 		echo '<div class="mm-opt-progress"><div class="mm-opt-progress-bar" id="mm-opt-bar" style="width:0"></div></div>';
 		echo '<p id="mm-opt-bulk-status" class="description">' . esc_html__( 'Ready.', 'mm-optimizer' ) . '</p>';
-		echo '<button type="button" class="button button-primary" id="mm-opt-bulk-start">' . esc_html__( 'Start conversion', 'mm-optimizer' ) . '</button> ';
+
+		// A queue left over from an earlier run resumes as it is: rescanning
+		// would throw it away and walk the whole library again.
+		if ( $queued > 0 ) {
+			echo '<button type="button" class="button button-primary" id="mm-opt-bulk-resume">';
+			printf(
+				/* translators: %s: number of files still queued. */
+				esc_html__( 'Resume (%s queued)', 'mm-optimizer' ),
+				esc_html( number_format_i18n( $queued ) )
+			);
+			echo '</button> ';
+			echo '<button type="button" class="button" id="mm-opt-bulk-start">' . esc_html__( 'Rescan the library', 'mm-optimizer' ) . '</button> ';
+		} else {
+			echo '<button type="button" class="button button-primary" id="mm-opt-bulk-start">' . esc_html__( 'Start conversion', 'mm-optimizer' ) . '</button> ';
+		}
+
 		echo '<button type="button" class="button" id="mm-opt-bulk-stop" disabled>' . esc_html__( 'Stop', 'mm-optimizer' ) . '</button>';
 		echo '</div>';
 
 		echo '<p class="description" style="margin-top:14px">' . esc_html__( 'Conversion continues while this page stays open, and picks up where it left off if you close it. WordPress cron is not reliable on every host, so running it from the browser is the main route rather than a fallback.', 'mm-optimizer' ) . '</p>';
+
+		if ( $queued > 0 && $state['last_tick'] > 0 && ( time() - (int) $state['last_tick'] ) > 5 * MINUTE_IN_SECONDS ) {
+			echo '<p class="description">';
+			printf(
+				/* translators: %s: human-readable time since the last batch. */
+				esc_html__( 'The last batch ran %s ago: the queue is idle. Resume picks it up from where it stopped.', 'mm-optimizer' ),
+				esc_html( human_time_diff( (int) $state['last_tick'] ) )
+			);
+			echo '</p>';
+		}
 
 		self::render_migration();
 	}

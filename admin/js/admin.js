@@ -111,8 +111,10 @@
 
 		postData( 'mm_optimizer_bulk_tick', {} ).then( function ( res ) {
 			if ( ! res || ! res.success ) {
-				return stopBulk( window.mmOptimizer.i18n.failed );
+				return retry();
 			}
+
+			bulk.failures = 0;
 
 			var d = res.data;
 
@@ -136,7 +138,27 @@
 			}
 
 			stopBulk( window.mmOptimizer.i18n.finished );
-		} ).catch( function () { stopBulk( window.mmOptimizer.i18n.failed ); } );
+		} ).catch( retry );
+	}
+
+	// A batch that dies (usually the time limit, mid-encode) answers with an
+	// error page, but the server puts its rows back in line: try again
+	// before giving up.
+	function retry() {
+		if ( ! bulk.running ) {
+			return;
+		}
+
+		bulk.failures = ( bulk.failures || 0 ) + 1;
+
+		// Up to about three minutes in all: longer than the server takes to
+		// declare a vanished worker's lock dead.
+		if ( bulk.failures > 8 ) {
+			return stopBulk( window.mmOptimizer.i18n.failed );
+		}
+
+		setStatus( window.mmOptimizer.i18n.retrying );
+		window.setTimeout( tick, Math.min( 30000, 5000 * bulk.failures ) );
 	}
 
 	function stopBulk( message ) {
@@ -146,21 +168,38 @@
 		var start = document.getElementById( 'mm-opt-bulk-start' );
 		var stop = document.getElementById( 'mm-opt-bulk-stop' );
 
+		var resume = document.getElementById( 'mm-opt-bulk-resume' );
+
 		if ( start ) { start.disabled = false; }
+		if ( resume ) { resume.disabled = false; }
 		if ( stop ) { stop.disabled = true; }
 	}
 
 	document.addEventListener( 'DOMContentLoaded', function () {
 		var start = document.getElementById( 'mm-opt-bulk-start' );
+		var resume = document.getElementById( 'mm-opt-bulk-resume' );
 		var stop = document.getElementById( 'mm-opt-bulk-stop' );
+
+		function begin() {
+			bulk.running = true;
+			bulk.total = 0;
+			bulk.failures = 0;
+			if ( start ) { start.disabled = true; }
+			if ( resume ) { resume.disabled = true; }
+			if ( stop ) { stop.disabled = false; }
+		}
 
 		if ( start ) {
 			start.addEventListener( 'click', function () {
-				bulk.running = true;
-				bulk.total = 0;
-				start.disabled = true;
-				if ( stop ) { stop.disabled = false; }
+				begin();
 				scanStep( true );
+			} );
+		}
+
+		if ( resume ) {
+			resume.addEventListener( 'click', function () {
+				begin();
+				tick();
 			} );
 		}
 

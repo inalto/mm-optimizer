@@ -52,7 +52,10 @@ bulk run reaches them.
 4. Deactivate the other plugin.
 5. Remove its rewrite rules if it left any — check `.htaccess` in your site
    root, `wp-content/` and `wp-content/uploads/` for its marker block.
-6. Reload the MM Optimizer settings. Delivery arms itself automatically.
+6. Reload the MM Optimizer settings. Delivery arms itself automatically. If
+   the red *Image delivery is off* notice is still there, the Delivery tab is
+   set to *No delivery* (1.0.0 saved that when applying its recommendation
+   during a conflict): choose `<picture>` and save.
 7. Load a page and confirm images are being served as AVIF or WebP in your
    browser's network panel.
 

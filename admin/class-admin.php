@@ -89,6 +89,7 @@ class Admin {
 					'progress'  => __( 'Created %1$s · skipped %2$s · errors %3$s · saved %4$s · %5$s remaining', 'mm-optimizer' ),
 					'finished'  => __( 'Conversion complete.', 'mm-optimizer' ),
 					'stopped'   => __( 'Conversion stopped.', 'mm-optimizer' ),
+					'retrying'  => __( 'The last batch failed, retrying…', 'mm-optimizer' ),
 				),
 			)
 		);
@@ -106,6 +107,67 @@ class Admin {
 
 		self::conflict_notice();
 		self::capability_notice();
+		self::delivery_notice();
+	}
+
+	/**
+	 * Says loudly when visitors are not getting the derivatives.
+	 *
+	 * On the plugin's own page it always shows; elsewhere only on the
+	 * dashboard and the media library, and only when the conflict notice is
+	 * not already saying the same thing.
+	 *
+	 * @return void
+	 */
+	public static function delivery_notice() {
+		$status = Delivery\Delivery::status();
+
+		if ( $status['active'] ) {
+			return;
+		}
+
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		$id     = $screen ? $screen->id : '';
+		$own    = 'toplevel_page_mm-optimizer' === $id;
+
+		if ( ! $own && ( 'conflict' === $status['reason'] || ! in_array( $id, array( 'dashboard', 'upload' ), true ) ) ) {
+			return;
+		}
+
+		$totals = Records::totals();
+
+		echo '<div class="notice notice-error mm-opt-delivery-off"><p><strong>' . esc_html__( 'Image delivery is off', 'mm-optimizer' ) . '</strong></p><p>';
+
+		if ( $totals['done'] > 0 ) {
+			printf(
+				/* translators: 1: number of derivatives, 2: space they would save. */
+				esc_html__( 'Visitors still receive the original JPEG and PNG files: %1$s WebP/AVIF files, saving %2$s, are ready but not being served.', 'mm-optimizer' ),
+				'<strong>' . esc_html( number_format_i18n( $totals['done'] ) ) . '</strong>',
+				'<strong>' . esc_html( size_format( $totals['saved'], 1 ) ) . '</strong>'
+			);
+		} else {
+			esc_html_e( 'Visitors still receive the original JPEG and PNG files: nothing MM Optimizer produces is being served.', 'mm-optimizer' );
+		}
+
+		echo ' ';
+
+		if ( 'conflict' === $status['reason'] ) {
+			printf(
+				/* translators: %s: list of conflicting plugins. */
+				esc_html__( 'It is held back because %s is active.', 'mm-optimizer' ),
+				esc_html( implode( ', ', Conflicts::active() ) )
+			);
+		} else {
+			esc_html_e( 'The delivery mode is set to "No delivery". It does not switch back on by itself, not even after the conflicting plugin is gone.', 'mm-optimizer' );
+		}
+
+		echo '</p><p><a class="button button-primary" href="' . esc_url( admin_url( 'admin.php?page=mm-optimizer&tab=delivery' ) ) . '">' . esc_html__( 'Choose a delivery mode', 'mm-optimizer' ) . '</a>';
+
+		if ( 'conflict' === $status['reason'] ) {
+			echo ' <a class="button" href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'Go to plugins', 'mm-optimizer' ) . '</a>';
+		}
+
+		echo '</p></div>';
 	}
 
 	/**

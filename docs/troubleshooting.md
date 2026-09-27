@@ -60,8 +60,14 @@ present.
 
 **"Bulk conversion stalls."** WordPress cron is unreliable on many hosts, which
 is why the bulk runner is browser-driven: leave the tab open and it keeps going.
-If a worker was killed mid-batch, its rows unlock automatically after ten
-minutes.
+A worker that dies on a fatal error (typically the time limit inside an AVIF
+encode) puts its rows back and releases the lock from a shutdown handler; one
+killed outright is detected after two minutes without a lock heartbeat. The
+Bulk tab then offers **Resume**.
+
+**"Everything converted but pages still serve JPEGs."** Delivery is off: look for
+the red *Image delivery is off* notice. Either a conflicting plugin is active,
+or the mode is set to *No delivery*, which never re-enables itself.
 
 **"A gallery layout broke after enabling delivery."** Wrapping an `<img>` in a
 `<picture>` breaks direct-child selectors like `.gallery > img`. Add the image's

@@ -80,3 +80,6 @@
 .mm-opt-progress { height: 22px; max-width: 640px; background: #f0f0f1; border: 1px solid #c3c4c7; border-radius: 3px; overflow: hidden; }
 .mm-opt-progress-bar { height: 100%; width: 0; background: #2271b1; transition: width .25s ease; }
 .mm-opt-bulk .description { margin: 10px 0; }
+
+.notice.mm-opt-delivery-off { border-left-width: 6px; padding: 6px 14px 10px; }
+.notice.mm-opt-delivery-off p:first-child strong { font-size: 15px; }

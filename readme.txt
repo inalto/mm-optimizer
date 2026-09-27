@@ -4,7 +4,7 @@ Tags: images, optimization, webp, avif, performance
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -63,6 +63,14 @@ Because the library says it supports them but the encoding test failed. Those fo
 Many servers have a MIME type list that predates AVIF and hand back `.avif` files as `application/octet-stream`. In `<picture>` mode the browser picks the AVIF source on the strength of the `type` attribute, then fails to decode it, and on Firefox and Safari does not fall back to the original image. The plugin checks this with a real request and adds an `AddType` line to `.htaccess`; if it cannot write one, it prefers not to deliver AVIF at all.
 
 == Changelog ==
+
+= 1.1.0 =
+* Bulk queue is restartable: a worker that dies mid-batch hands its rows back and releases the lock, a dead lock is detected after two minutes, and the Bulk tab offers Resume instead of a full rescan.
+* The execution time limit is restarted before each file, which stops multithreaded AVIF encoding from hitting it.
+* The browser-driven run retries failed batches instead of stopping.
+* A prominent notice says when image delivery is off, and why.
+* The recommended configuration no longer saves "No delivery" while a conflicting plugin is active, so delivery arms itself once that plugin is gone.
+* Fixed: the Bulk tab counters always read zero on MySQL 8 (reserved word in the totals query).
 
 = 1.0.0 =
 * First release.

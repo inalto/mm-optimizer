@@ -3,7 +3,7 @@
  * Plugin Name:       MM Optimizer
  * Plugin URI:        https://inalto.com/
  * Description:       Image optimization for WordPress. Detects the graphics libraries available on the host, verifies which encoders actually work, and proposes the optimal settings. Generates WebP and AVIF derivatives with discrete optimization levels and delivers them responsively. Never modifies the original files. No paid tier, no limits.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Inalto
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MM_OPTIMIZER_VERSION', '1.0.0' );
+define( 'MM_OPTIMIZER_VERSION', '1.1.0' );
 define( 'MM_OPTIMIZER_FILE', __FILE__ );
 define( 'MM_OPTIMIZER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MM_OPTIMIZER_URL', plugin_dir_url( __FILE__ ) );

@@ -78,28 +78,44 @@ upload jumps ahead of a backlog.
 
 ### The claim protocol
 
+Only the lock holder claims, with one token per batch:
+
 ```sql
 UPDATE …mm_optimizer_queue
    SET claimed_at = <now>, claim_token = '<16 random>', attempts = attempts + 1
- WHERE claimed_at = 0 OR claimed_at < <now - 600>
+ WHERE claimed_at = 0
  ORDER BY priority ASC, id ASC LIMIT <batch>;
 
 SELECT * FROM …mm_optimizer_queue WHERE claim_token = '<16 random>';
 ```
 
-A worker killed mid-batch leaves its rows claimed; 600 seconds later they become
-claimable again and `attempts` increments. At four attempts the row is dropped
-and the failure is recorded in the tracking table instead.
+Recovery works in three layers:
 
-**That is the entire stall recovery.** No watchdog process, no heartbeat, no
-separate reaper.
+1. **On the way out.** Rows claimed but not reached before the deadline are
+   released with their attempt refunded.
+2. **After a fatal error.** `finally` does not run, so `run()` registers a
+   cleanup that releases the batch's rows (refunding every one except
+   the row being worked), releases the lock, saves the counters and spawns the
+   next worker. The failure goes to the log. It is wired twice: as a shutdown
+   function, and on the `wp_php_error_message` filter — WordPress's fatal error
+   handler is a shutdown function registered first, and it ends in `wp_die()`,
+   which exits before any later shutdown function runs.
+3. **After a hard kill.** Holding the lock means no other worker is alive, so
+   every batch starts by releasing whatever is still claimed.
+
+`attempts` therefore only grows for a row that was being worked when its worker
+died. Past three the row is dropped. Before every row the worker also restarts
+PHP's time limit: on Linux it counts CPU time, which multithreaded AVIF
+encoding burns faster than the wall clock the batch deadline uses.
 
 ## Locking
 
 A `mm_opt_queue_lock` transient and a `queue.lock` file, both holding the same
 random key, both required to start. A transient alone is not enough — an object
 cache flush makes it vanish and two workers start together. A file alone is not
-enough — it can be orphaned, so a file older than the TTL is treated as stale.
+enough — it can be orphaned. The worker touches the file before every encode, so
+it doubles as a heartbeat: a file untouched for two minutes (`Lock::STALE`)
+means the holder is dead, and both the file and the transient are cleared.
 Release only happens when the stored key still matches, so a slow worker can
 never delete a newer worker's lock.
 

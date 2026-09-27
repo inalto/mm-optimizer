@@ -15,6 +15,28 @@ class Queue {
 	const SECRET = 'mm_optimizer_worker_secret';
 
 	/**
+	 * Claim token of the batch this process is working; empty when idle.
+	 *
+	 * @var string
+	 */
+	protected static $token = '';
+
+	/**
+	 * Row being worked right now.
+	 *
+	 * @var int
+	 */
+	protected static $current = 0;
+
+	/**
+	 * Running totals of the current batch, kept where the shutdown handler
+	 * can still reach them after a fatal error.
+	 *
+	 * @var array
+	 */
+	protected static $summary = array();
+
+	/**
 	 * Table name.
 	 *
 	 * @return string
@@ -111,29 +133,25 @@ class Queue {
 	/**
 	 * Claims a batch.
 	 *
-	 * Rows claimed more than ten minutes ago become available again: a worker
-	 * killed mid-batch does not block the queue, and no watchdog process is
-	 * needed.
+	 * Only the lock holder claims, so rows are simply taken with the batch
+	 * token: whatever a dead worker left claimed is put back by
+	 * release_claims() before the next batch starts.
 	 *
-	 * @param int $limit Number of rows.
+	 * @param int    $limit Number of rows.
+	 * @param string $token Claim token of the batch.
 	 * @return array
 	 */
-	public static function claim( $limit = 5 ) {
+	public static function claim( $limit, $token ) {
 		global $wpdb;
-
-		$token = wp_generate_password( 16, false );
-		$now   = time();
-		$stale = $now - 600;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query(
 			$wpdb->prepare(
 				'UPDATE ' . self::table() . ' SET claimed_at = %d, claim_token = %s, attempts = attempts + 1
-				 WHERE claimed_at = 0 OR claimed_at < %d
+				 WHERE claimed_at = 0
 				 ORDER BY priority ASC, id ASC LIMIT %d',
-				$now,
+				time(),
 				$token,
-				$stale,
 				(int) $limit
 			)
 		);
@@ -141,10 +159,42 @@ class Queue {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (array) $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT * FROM ' . self::table() . ' WHERE claim_token = %s', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'SELECT * FROM ' . self::table() . ' WHERE claim_token = %s ORDER BY priority ASC, id ASC', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$token
 			),
 			ARRAY_A
+		);
+	}
+
+	/**
+	 * Puts claimed rows back in line.
+	 *
+	 * Rows that were claimed but never reached get their attempt back; only
+	 * the row being worked when a worker died keeps it, so a file that keeps
+	 * killing the worker leaves the queue after three tries.
+	 *
+	 * @param string $token  Claim token; empty releases every claimed row.
+	 * @param int    $except Row that keeps its attempt.
+	 * @return void
+	 */
+	protected static function release_claims( $token = '', $except = 0 ) {
+		global $wpdb;
+
+		if ( '' === $token ) {
+			// Nobody else holds the lock, so every claimed row is an orphan.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( 'UPDATE ' . self::table() . " SET claimed_at = 0, claim_token = '' WHERE claimed_at > 0" );
+			return;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query(
+			$wpdb->prepare(
+				'UPDATE ' . self::table() . " SET claimed_at = 0, claim_token = '', attempts = IF( id = %d, attempts, GREATEST( attempts, 1 ) - 1 )
+				 WHERE claim_token = %s",
+				(int) $except,
+				$token
+			)
 		);
 	}
 
@@ -209,14 +259,26 @@ class Queue {
 			return array( 'locked' => true, 'processed' => 0 );
 		}
 
-		$summary = array( 'locked' => false, 'processed' => 0, 'done' => 0, 'skipped' => 0, 'error' => 0, 'saved' => 0 );
+		self::$token   = wp_generate_password( 16, false );
+		self::$current = 0;
+		self::$summary = array( 'locked' => false, 'processed' => 0, 'done' => 0, 'skipped' => 0, 'error' => 0, 'saved' => 0 );
+
+		// A fatal error (usually the execution time limit, inside an encoder)
+		// skips the finally block below: the shutdown handler does its job.
+		// WordPress's own fatal error handler is a shutdown function
+		// registered earlier, and it ends in wp_die(), which exits before
+		// ours is reached: its error message filter is the hook that runs.
+		register_shutdown_function( array( __CLASS__, 'shutdown' ) );
+		add_filter( 'wp_php_error_message', array( __CLASS__, 'on_fatal' ) );
+
+		self::release_claims();
 
 		try {
 			$deadline = null !== $deadline ? (float) $deadline : self::deadline();
 			$batch    = max( 1, (int) Options::get( 'bulk.batch', 5 ) );
 
 			while ( microtime( true ) < $deadline ) {
-				$rows = self::claim( $batch );
+				$rows = self::claim( $batch, self::$token );
 
 				if ( empty( $rows ) ) {
 					break;
@@ -227,22 +289,100 @@ class Queue {
 						break 2;
 					}
 
-					self::process( $row, $summary );
+					self::extend_time();
+
+					self::$current = (int) $row['id'];
+					self::process( $row, self::$summary );
+					self::$current = 0;
+
 					Lock::refresh();
 				}
 			}
 		} finally {
+			// Rows claimed but not reached before the deadline.
+			self::release_claims( self::$token );
+			self::$token = '';
 			Lock::release();
+			remove_filter( 'wp_php_error_message', array( __CLASS__, 'on_fatal' ) );
 		}
 
-		self::update_state( $summary );
+		self::update_state( self::$summary );
 
 		// If work remains, another worker picks up straight away.
 		if ( self::remaining() > 0 ) {
 			self::spawn();
 		}
 
-		return $summary;
+		return self::$summary;
+	}
+
+	/**
+	 * Runs the cleanup from inside WordPress's fatal error handler.
+	 *
+	 * @param string $message Error message shown to the visitor.
+	 * @return string Unchanged.
+	 */
+	public static function on_fatal( $message ) {
+		self::shutdown();
+
+		return $message;
+	}
+
+	/**
+	 * Cleans up after a worker that died mid-batch.
+	 *
+	 * Registered by run(); does nothing when the batch ended normally.
+	 *
+	 * @return void
+	 */
+	public static function shutdown() {
+		if ( '' === self::$token ) {
+			return;
+		}
+
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 20 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		}
+
+		$error = error_get_last();
+
+		if ( self::$current && $error && in_array( $error['type'], array( E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR ), true ) ) {
+			Log::add(
+				sprintf(
+					/* translators: 1: queue row, 2: error message. */
+					__( 'The worker died on queue row %1$d: %2$s', 'mm-optimizer' ),
+					self::$current,
+					$error['message']
+				),
+				'error'
+			);
+		}
+
+		self::release_claims( self::$token, self::$current );
+		self::$token = '';
+		Lock::release();
+
+		self::update_state( self::$summary );
+
+		if ( self::remaining() > 0 ) {
+			self::spawn();
+		}
+	}
+
+	/**
+	 * Restarts the execution time count before each row.
+	 *
+	 * On Linux the limit counts CPU time, and multithreaded AVIF encoding
+	 * burns it several times faster than the wall clock the deadline uses.
+	 *
+	 * @return void
+	 */
+	protected static function extend_time() {
+		$max = (int) ini_get( 'max_execution_time' );
+
+		if ( $max > 0 && function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( max( 60, $max ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		}
 	}
 
 	/**
@@ -269,6 +409,8 @@ class Queue {
 		}
 
 		foreach ( array_filter( explode( ',', (string) $row['formats'] ) ) as $format ) {
+			Lock::refresh();
+
 			try {
 				$result = Converter::convert( $path, $format, (int) $row['attachment_id'], '' );
 			} catch ( \Throwable $e ) {

@@ -20,6 +20,14 @@ class Lock {
 	const TTL = 300;
 
 	/**
+	 * Seconds without a heartbeat after which the holder is taken for dead.
+	 *
+	 * The worker touches the lock file before every encode, and no single
+	 * encode gets anywhere near this long.
+	 */
+	const STALE = 120;
+
+	/**
 	 * Key held by this process.
 	 *
 	 * @var string
@@ -68,23 +76,24 @@ class Lock {
 	 * @return bool
 	 */
 	public static function is_held() {
-		if ( get_transient( self::KEY ) ) {
+		$file = self::file();
+
+		clearstatcache( true, $file );
+
+		// The file is the heartbeat: when it has gone quiet the holder died
+		// without releasing (a fatal error, a killed process), and waiting
+		// for the transient to expire would stall the queue for minutes.
+		if ( @is_file( $file ) ) {
+			if ( ( time() - (int) @filemtime( $file ) ) > self::STALE ) {
+				@unlink( $file );
+				delete_transient( self::KEY );
+				return false;
+			}
+
 			return true;
 		}
 
-		$file = self::file();
-
-		if ( ! @is_file( $file ) ) {
-			return false;
-		}
-
-		// A file older than the TTL is the residue of a dead process.
-		if ( ( time() - (int) @filemtime( $file ) ) > self::TTL ) {
-			@unlink( $file );
-			return false;
-		}
-
-		return true;
+		return (bool) get_transient( self::KEY );
 	}
 
 	/**

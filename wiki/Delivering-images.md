@@ -92,6 +92,18 @@ where custom CSS tends to live.
 
 ## When delivery is switched off
 
-If another optimization plugin is active, delivery stays off deliberately — see
-[Migrating](Migrating). Conversion carries on, so everything is ready the moment
-you deactivate the other plugin.
+While delivery is off, a red **Image delivery is off** notice sits at the top of
+every MM Optimizer screen (and on the dashboard and media library), with the
+number of derivatives that are ready but not being served. It is there on
+purpose: the plugin converts happily with delivery off, and without it nothing
+would tell you visitors are still getting the original JPEGs.
+
+There are two reasons it can be off:
+
+- **Another optimization plugin is active.** Delivery is held back deliberately
+  — see [Migrating](Migrating). Conversion carries on, and delivery arms itself
+  the moment you deactivate the other plugin.
+- **The mode is set to *No delivery*.** That is a setting, and it stays put
+  until you change it on the Delivery tab. Version 1.0.0's recommended
+  configuration saved it whenever a conflicting plugin was active; if you
+  applied it then, pick a mode by hand once the other plugin is gone.

@@ -7,6 +7,9 @@ already have.
 
 **MM Optimizer → Bulk conversion** shows what the library holds, what has been
 converted so far, and how much space has been saved. Click **Start conversion**.
+If a queue is left over from an earlier run, the button reads **Resume (N
+queued)** instead and carries on with that queue; **Rescan the library** throws
+it away and scans from scratch.
 
 The plugin scans the library in pages, queues what is missing, and works through
 the queue in batches, reporting progress as it goes.
@@ -16,8 +19,8 @@ primary route rather than a fallback: WordPress cron is unreliable on a great
 many hosts, and a job of tens of thousands of encodes is exactly the kind that
 a broken cron silently never finishes.
 
-Closing the tab stops the run. Reopening and starting again resumes from where
-it left off — nothing already converted is redone.
+Closing the tab stops driving the run. Reopening the page and clicking
+**Resume** picks up from where it left off — nothing already converted is redone.
 
 ## How long it takes
 
@@ -58,8 +61,17 @@ hundred megabytes. The saving is in what visitors download, not what you store.
 
 ## If it stalls
 
-The progress line stops updating if a worker was interrupted. Rows unlock
-automatically after ten minutes and the next run picks them up; there is nothing
-to reset by hand.
+A worker can die mid-batch — most often on the PHP time limit while encoding a
+large original to AVIF. The plugin cleans up after it: the rows it held go back
+in line, the lock is released and a new worker starts. The page retries a failed
+batch on its own (the status line says *retrying*) and only gives up after about
+three minutes of failures in a row.
+
+If the process was killed outright, the lock is considered dead after two
+minutes without a heartbeat. If the page says the queue is idle, click
+**Resume**; there is nothing to reset by hand.
+
+A file that kills the worker three times leaves the queue, and the log records
+which one it was.
 
 **Stop** clears the queue without touching anything already converted.

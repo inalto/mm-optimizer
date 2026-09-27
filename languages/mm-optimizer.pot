@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-3.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: MM Optimizer 1.0.0\n"
+"Project-Id-Version: MM Optimizer 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mm-optimizer\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T18:14:10+00:00\n"
+"POT-Creation-Date: 2026-09-27T19:30:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.10.0\n"
 "X-Domain: mm-optimizer\n"
@@ -18,8 +18,8 @@ msgstr ""
 #: mm-optimizer.php
 #: admin/class-admin.php:34
 #: admin/class-admin.php:35
-#: admin/class-admin.php:123
-#: admin/class-admin.php:165
+#: admin/class-admin.php:185
+#: admin/class-admin.php:227
 #: admin/class-settings.php:56
 msgid "MM Optimizer"
 msgstr ""
@@ -76,21 +76,52 @@ msgstr ""
 msgid "Conversion stopped."
 msgstr ""
 
-#: admin/class-admin.php:128
+#: admin/class-admin.php:92
+msgid "The last batch failed, retrying…"
+msgstr ""
+
+#: admin/class-admin.php:139
+msgid "Image delivery is off"
+msgstr ""
+
+#. translators: 1: number of derivatives, 2: space they would save.
+#: admin/class-admin.php:144
+msgid "Visitors still receive the original JPEG and PNG files: %1$s WebP/AVIF files, saving %2$s, are ready but not being served."
+msgstr ""
+
+#: admin/class-admin.php:149
+msgid "Visitors still receive the original JPEG and PNG files: nothing MM Optimizer produces is being served."
+msgstr ""
+
+#. translators: %s: list of conflicting plugins.
+#: admin/class-admin.php:157
+msgid "It is held back because %s is active."
+msgstr ""
+
+#: admin/class-admin.php:161
+msgid "The delivery mode is set to \"No delivery\". It does not switch back on by itself, not even after the conflicting plugin is gone."
+msgstr ""
+
+#: admin/class-admin.php:164
+msgid "Choose a delivery mode"
+msgstr ""
+
+#: admin/class-admin.php:167
+#: admin/class-admin.php:203
+msgid "Go to plugins"
+msgstr ""
+
+#: admin/class-admin.php:190
 msgid "%s already handles this site's images, so MM Optimizer keeps its delivery switched off to avoid overlapping. Conversion carries on: the derivatives will be ready when you decide to switch over."
 msgid_plural "%s already handle this site's images, so MM Optimizer keeps its delivery switched off to avoid overlapping. Conversion carries on: the derivatives will be ready when you decide to switch over."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/class-admin.php:141
-msgid "Go to plugins"
-msgstr ""
-
-#: admin/class-admin.php:166
+#: admin/class-admin.php:228
 msgid "No graphics library on this server can produce WebP or AVIF. Open the Diagnostics tab: it lists exactly what to ask your host for."
 msgstr ""
 
-#: admin/class-admin.php:170
+#: admin/class-admin.php:232
 msgid "Open diagnostics"
 msgstr ""
 
@@ -122,78 +153,92 @@ msgstr ""
 msgid "Adopted %1$s files, ignored %2$s."
 msgstr ""
 
-#: admin/class-bulk.php:25
+#: admin/class-bulk.php:26
 #: admin/class-settings.php:23
 msgid "Bulk conversion"
 msgstr ""
 
-#: admin/class-bulk.php:28
+#: admin/class-bulk.php:29
 msgid "No format is active, so there is nothing to convert. Check the Diagnostics tab."
 msgstr ""
 
 #. translators: 1: number of images, 2: list of formats.
-#: admin/class-bulk.php:35
+#: admin/class-bulk.php:36
 msgid "The library holds %1$s images. Derivatives will be generated in these formats: %2$s. Original files are never modified."
 msgstr ""
 
-#: admin/class-bulk.php:42
+#: admin/class-bulk.php:43
 msgid "Derivatives generated"
 msgstr ""
 
-#: admin/class-bulk.php:43
+#: admin/class-bulk.php:44
 msgid "Skipped (no gain)"
 msgstr ""
 
-#: admin/class-bulk.php:44
+#: admin/class-bulk.php:45
 msgid "Errors"
 msgstr ""
 
-#: admin/class-bulk.php:45
+#: admin/class-bulk.php:46
 msgid "Space saved"
 msgstr ""
 
-#: admin/class-bulk.php:46
+#: admin/class-bulk.php:47
 msgid "Queued"
 msgstr ""
 
-#: admin/class-bulk.php:51
+#: admin/class-bulk.php:52
 msgid "Ready."
 msgstr ""
 
-#: admin/class-bulk.php:52
+#. translators: %s: number of files still queued.
+#: admin/class-bulk.php:60
+msgid "Resume (%s queued)"
+msgstr ""
+
+#: admin/class-bulk.php:64
+msgid "Rescan the library"
+msgstr ""
+
+#: admin/class-bulk.php:66
 msgid "Start conversion"
 msgstr ""
 
-#: admin/class-bulk.php:53
+#: admin/class-bulk.php:69
 msgid "Stop"
 msgstr ""
 
-#: admin/class-bulk.php:56
+#: admin/class-bulk.php:72
 msgid "Conversion continues while this page stays open, and picks up where it left off if you close it. WordPress cron is not reliable on every host, so running it from the browser is the main route rather than a fallback."
 msgstr ""
 
-#: admin/class-bulk.php:74
+#. translators: %s: human-readable time since the last batch.
+#: admin/class-bulk.php:78
+msgid "The last batch ran %s ago: the queue is idle. Resume picks it up from where it stopped."
+msgstr ""
+
+#: admin/class-bulk.php:100
 msgid "Import from Converter for Media"
 msgstr ""
 
-#: admin/class-bulk.php:77
+#: admin/class-bulk.php:103
 msgid "The previous plugin's settings were found, but no already-converted files."
 msgstr ""
 
 #. translators: 1: number of WebP files, 2: number of AVIF files, 3: space occupied.
-#: admin/class-bulk.php:82
+#: admin/class-bulk.php:108
 msgid "The previous plugin produced %1$s WebP files and %2$s AVIF files, taking %3$s in total."
 msgstr ""
 
-#: admin/class-bulk.php:90
+#: admin/class-bulk.php:116
 msgid "Nearly all of those files are WebP. AVIF, which on this server pays off around 20% more than WebP, is effectively absent: regenerating from scratch is worth more than adopting the existing files. Adoption is still the quick route if you want to switch over now without waiting for the conversion."
 msgstr ""
 
-#: admin/class-bulk.php:95
+#: admin/class-bulk.php:121
 msgid "Import the settings"
 msgstr ""
 
-#: admin/class-bulk.php:98
+#: admin/class-bulk.php:124
 msgid "Adopt the converted files"
 msgstr ""
 
@@ -568,7 +613,7 @@ msgid ".htaccess content negotiation"
 msgstr ""
 
 #: admin/class-settings.php:226
-msgid "No delivery"
+msgid "No delivery (visitors get the original files)"
 msgstr ""
 
 #: admin/class-settings.php:236
@@ -713,12 +758,17 @@ msgstr ""
 msgid "Hand-set values. Use the test bench to check them against this site's own images."
 msgstr ""
 
-#: includes/class-queue.php:49
+#: includes/class-queue.php:71
 msgid "Every 5 minutes (MM Optimizer)"
 msgstr ""
 
+#. translators: 1: queue row, 2: error message.
+#: includes/class-queue.php:336
+msgid "The worker died on queue row %1$d: %2$s"
+msgstr ""
+
 #. translators: 1: file path, 2: error message.
-#: includes/class-queue.php:278
+#: includes/class-queue.php:403
 msgid "Conversion failed for %1$s: %2$s"
 msgstr ""
 
@@ -757,61 +807,61 @@ msgid "Thumbnail optimization is switched off: EWWW Image Optimizer is active an
 msgstr ""
 
 #. translators: %s: list of conflicting plugins.
-#: includes/class-recommender.php:143
-msgid "Delivery is switched off: %s already handles this site's images. Conversion stays on, so the derivatives are ready: delivery will arm itself once you deactivate the other plugin."
+#: includes/class-recommender.php:146
+msgid "Delivery is held back: %s already handles this site's images. Conversion stays on, so the derivatives are ready: delivery will arm itself once you deactivate the other plugin."
 msgstr ""
 
-#: includes/class-recommender.php:152
+#: includes/class-recommender.php:154
 msgid "Delivery via <picture>: the markup carries every variant and the browser chooses. Unlike .htaccess negotiation it needs no Vary: Accept and leaves page caches and CDNs alone."
 msgstr ""
 
-#: includes/class-recommender.php:166
+#: includes/class-recommender.php:168
 msgid "This server delivers .avif files with the wrong MIME type (it is missing from /etc/mime.types). An AddType line will be written into .htaccess: without it, Firefox and Safari pick the AVIF source and then fail to decode it, with no fallback to the original image."
 msgstr ""
 
-#: includes/class-recommender.php:173
+#: includes/class-recommender.php:175
 msgid "AVIF is generated but not delivered: the server returns it with the wrong MIME type and .htaccess is not writable. Delivering a source the browser picks and then cannot decode is worse than not delivering it. Add \"AddType image/avif .avif\" to the server configuration to enable it."
 msgstr ""
 
 #. translators: %d: number of registered image sizes.
-#: includes/class-recommender.php:189
+#: includes/class-recommender.php:191
 msgid "%d image size is registered: only the ones that actually appear in a srcset will be converted."
 msgid_plural "%d image sizes are registered: converting them all into two formats would multiply the work for no benefit, so only the ones that actually appear in a srcset will be converted."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: name of the managed host.
-#: includes/class-recommender.php:212
+#: includes/class-recommender.php:214
 msgid "Managed host detected (%s): binary discovery was skipped because they would not be executable, and the queue will use cron rather than loopback requests."
 msgstr ""
 
-#: includes/class-recommender.php:223
+#: includes/class-recommender.php:225
 msgid "The PHP file_uploads directive is disabled: no Media Library upload can work, with or without this plugin. Bulk conversion of the images already present works regardless."
 msgstr ""
 
-#: includes/class-recommender.php:231
+#: includes/class-recommender.php:233
 msgid "The uploads directory is not writable: no derivative can be created."
 msgstr ""
 
 #. translators: 1: library name, 2: MIME type.
-#: includes/class-recommender.php:243
+#: includes/class-recommender.php:245
 msgid "%1$s claims to support %2$s but the encoding test failed. The format stays off on purpose: this is exactly the situation that produces silently corrupted files."
 msgstr ""
 
-#: includes/class-recommender.php:269
+#: includes/class-recommender.php:271
 msgid "Recommended configuration applied."
 msgstr ""
 
-#: includes/class-recommender.php:315
+#: includes/class-recommender.php:317
 msgid "the only encoder available."
 msgstr ""
 
 #. translators: %s: list of engines that lost.
-#: includes/class-recommender.php:320
+#: includes/class-recommender.php:322
 msgid "tied on bytes with %s, but faster."
 msgstr ""
 
 #. translators: %s: list of engines that lost.
-#: includes/class-recommender.php:327
+#: includes/class-recommender.php:329
 msgid "produced the smallest file, beating %s."
 msgstr ""

@@ -130,23 +130,25 @@ class Recommender {
 			);
 		}
 
-		// R6 - delivery mode.
-		$conflicts = Conflicts::active();
+		// R6 - delivery mode. With a competitor active the mode is still set
+		// to <picture>: Conflicts::blocks() holds it back while the other
+		// plugin runs, and it arms itself once that plugin is gone. Saving
+		// "off" here would leave it off for good.
+		$conflicts            = Conflicts::active();
+		$settings['delivery'] = array( 'mode' => 'picture' );
 
 		if ( ! empty( $conflicts ) ) {
-			$settings['delivery'] = array( 'mode' => 'off' );
-			$blockers[]           = self::reason(
+			$blockers[] = self::reason(
 				'conflict_active',
 				'warning',
 				sprintf(
 					/* translators: %s: list of conflicting plugins. */
-					__( 'Delivery is switched off: %s already handles this site\'s images. Conversion stays on, so the derivatives are ready: delivery will arm itself once you deactivate the other plugin.', 'mm-optimizer' ),
+					__( 'Delivery is held back: %s already handles this site\'s images. Conversion stays on, so the derivatives are ready: delivery will arm itself once you deactivate the other plugin.', 'mm-optimizer' ),
 					implode( ', ', $conflicts )
 				)
 			);
 		} else {
-			$settings['delivery'] = array( 'mode' => 'picture' );
-			$reasons[]            = self::reason(
+			$reasons[] = self::reason(
 				'delivery_picture',
 				'good',
 				__( 'Delivery via <picture>: the markup carries every variant and the browser chooses. Unlike .htaccess negotiation it needs no Vary: Accept and leaves page caches and CDNs alone.', 'mm-optimizer' )

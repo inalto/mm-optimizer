@@ -223,7 +223,7 @@ class Settings {
 		$modes = array(
 			'picture'  => __( '&lt;picture&gt; markup (recommended)', 'mm-optimizer' ),
 			'htaccess' => __( '.htaccess content negotiation', 'mm-optimizer' ),
-			'off'      => __( 'No delivery', 'mm-optimizer' ),
+			'off'      => __( 'No delivery (visitors get the original files)', 'mm-optimizer' ),
 		);
 
 		$mode = Options::get( 'delivery.mode', 'picture' );

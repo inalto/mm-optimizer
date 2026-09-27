@@ -50,6 +50,29 @@ class Delivery {
 	}
 
 	/**
+	 * Whether visitors are actually served the derivatives.
+	 *
+	 * @return array {
+	 *     @type bool   $active True when a mode is armed.
+	 *     @type string $reason 'off' when switched off in the settings,
+	 *                          'conflict' when another plugin blocks it.
+	 * }
+	 */
+	public static function status() {
+		$mode = Options::get( 'delivery.mode', 'picture' );
+
+		if ( 'off' === $mode ) {
+			return array( 'active' => false, 'reason' => 'off' );
+		}
+
+		if ( Conflicts::blocks( $mode ) ) {
+			return array( 'active' => false, 'reason' => 'conflict' );
+		}
+
+		return array( 'active' => true, 'reason' => '' );
+	}
+
+	/**
 	 * True only on a public page request.
 	 *
 	 * @return bool

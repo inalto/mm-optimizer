@@ -202,7 +202,7 @@ class Records {
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$rows = (array) $wpdb->get_results(
-			'SELECT status, COUNT(*) AS n, SUM(source_bytes) AS src, SUM(out_bytes) AS out FROM ' . self::table() . ' GROUP BY status', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			'SELECT status, COUNT(*) AS n, SUM(source_bytes) AS src, SUM(out_bytes) AS out_bytes FROM ' . self::table() . ' GROUP BY status', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			ARRAY_A
 		);
 
@@ -227,7 +227,7 @@ class Records {
 			$out[ $key ] = (int) $row['n'];
 
 			if ( self::STATUS_DONE === (int) $row['status'] ) {
-				$out['saved'] = max( 0, (int) $row['src'] - (int) $row['out'] );
+				$out['saved'] = max( 0, (int) $row['src'] - (int) $row['out_bytes'] );
 			}
 		}
 
