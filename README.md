@@ -140,6 +140,13 @@ stand-down for testing, and says so with an admin notice.
 Public functions: `mm_optimizer_get_option()`, `mm_optimizer_capabilities()`,
 `mm_optimizer_recommendation()`, `mm_optimizer_supports()`.
 
+## Wiki
+
+The user handbook is kept under [`wiki/`](wiki/) and published to the
+[GitHub wiki](https://github.com/inalto/mm-optimizer/wiki) with
+`wiki/publish.sh`. Keeping the sources in the repository means the pages are
+version-controlled and reviewable alongside the code.
+
 ## Translations
 
 Source strings are English. An Italian translation ships in
