@@ -106,9 +106,14 @@ class Delivery {
 	 * Without it, wrapping an image in a <picture> breaks any layout that
 	 * assumed the <img> was a direct child.
 	 *
+	 * Divi hides the first slide image with opacity:0 and reveals it from
+	 * JavaScript through .children("img"), which no longer matches once the
+	 * <img> is inside a <picture>: the image would stay invisible. The slide
+	 * container keeps its own fade-in animation.
+	 *
 	 * @return void
 	 */
 	public static function inline_style() {
-		echo "<style id=\"mm-opt-picture\">picture.mm-opt-picture{display:contents}@supports not (display:contents){picture.mm-opt-picture{display:block;width:100%}}</style>\n";
+		echo "<style id=\"mm-opt-picture\">picture.mm-opt-picture{display:contents}@supports not (display:contents){picture.mm-opt-picture{display:block;width:100%}}.et_pb_slide:first-child .et_pb_slide_image picture.mm-opt-picture img{opacity:1}</style>\n";
 	}
 }

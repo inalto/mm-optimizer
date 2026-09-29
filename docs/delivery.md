@@ -11,7 +11,7 @@ Each eligible `<img>` is wrapped:
 <picture class="mm-opt-picture">
   <source type="image/avif" srcset="…" sizes="…">
   <source type="image/webp" srcset="…" sizes="…">
-  <img …the original tag, byte-identical…>
+  <img …the original tag… data-mm-opt>
 </picture>
 ```
 
@@ -20,7 +20,8 @@ reasons: it round-trips unknown attributes exactly, which matters on sites where
 page builders inject `data-*` heavily, and it gives a token stream so images
 already inside a `<picture>` can be skipped.
 
-**The inner `<img>` comes back verbatim.** Every attribute survives — `loading`,
+**The inner `<img>` comes back verbatim**, plus one `data-mm-opt` marker
+(see below). Every attribute survives — `loading`,
 `decoding`, `fetchpriority`, `class`, all `data-*`, the original `srcset` and
 `sizes`. This is the single most important correctness property: if the
 `<source>` elements are wrong in any way, the browser still has an untouched
@@ -76,7 +77,7 @@ So the plugin:
 
 | Case | Why |
 |---|---|
-| Already inside a `<picture>` | Never wrap twice. |
+| Already inside a `<picture>` | Never wrap twice. The `<img>` carries `data-mm-opt` once wrapped: builders such as Divi pass `wp_get_attachment_image()` output through `wp_filter_content_tags()`, whose filter sees only the bare tag and would otherwise wrap it again. |
 | `src` is a data URI or external | Nothing to map to. |
 | A lazy loader owns the element | `data-src` and friends hold the real URL; the `src` is a placeholder, and building sources from it would point the `<picture>` at the placeholder. |
 | Class is in the exclusion list | Escape hatch for layouts that break. |
@@ -93,7 +94,9 @@ picture.mm-opt-picture { display: contents }
 
 `display: contents` removes the element from layout entirely, so existing flex
 rules, grid placement and `object-fit` keep working unchanged. An
-`@supports not (display: contents)` fallback covers older browsers.
+`@supports not (display: contents)` fallback covers older browsers. One more
+rule un-hides Divi's first slide image, which Divi reveals from JavaScript via
+`.children("img")` and would otherwise leave at `opacity: 0`.
 
 What this **cannot** fix is direct-child selectors. A stylesheet written as
 `.gallery > img` stops matching once anything is interposed, because

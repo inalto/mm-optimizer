@@ -19,6 +19,12 @@ defined( 'ABSPATH' ) || exit;
 class Picture {
 
 	/**
+	 * Attribute set on every <img> already wrapped, so a later filter pass
+	 * over the same markup leaves it alone.
+	 */
+	const MARKER = 'data-mm-opt';
+
+	/**
 	 * Derivative existence, memoized per request.
 	 *
 	 * @var array
@@ -94,6 +100,14 @@ class Picture {
 			return $html;
 		}
 
+		// Already wrapped upstream. Builders (Divi, for one) pass the output of
+		// wp_get_attachment_image() through wp_filter_content_tags(), which hands
+		// the content filter the bare <img>: the <picture> around it is invisible
+		// from here, so the tag itself has to carry the mark.
+		if ( null !== $tags->get_attribute( self::MARKER ) ) {
+			return $html;
+		}
+
 		$src = (string) $tags->get_attribute( 'src' );
 
 		if ( '' === $src || 0 === strpos( $src, 'data:' ) ) {
@@ -134,7 +148,9 @@ class Picture {
 			return $html;
 		}
 
-		return '<picture class="mm-opt-picture">' . implode( '', $sources ) . $html . '</picture>';
+		$tags->set_attribute( self::MARKER, true );
+
+		return '<picture class="mm-opt-picture">' . implode( '', $sources ) . $tags->get_updated_html() . '</picture>';
 	}
 
 	/**
